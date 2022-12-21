@@ -32,6 +32,7 @@ read_crates_line(['[',Crate,']'|Line],Stacks,I) =>
     if Line = [' '|LineR] then
         read_crates_line(LineR,Stacks,I+1)
     end.
+read_crates_line(Line,Stacks,I) => true.
 	
 read_procs([Line|Lines],Procs) =>
     read_procs_line(split(Line),Procs,ProcsR),
