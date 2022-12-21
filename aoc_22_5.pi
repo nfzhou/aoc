@@ -47,8 +47,7 @@ exec([{K,F,T}|Procs],Stacks) =>                             % move K crates from
     FromStack = Stacks[F],
     MovedCrates = take(FromStack,K),
     RemCrates = drop(FromStack,K),
-    append(MovedCrates,Stacks[T],ToStack),
     Stacks[F] := RemCrates,
-    Stacks[T] := ToStack,
+    Stacks[T] := MovedCrates ++ Stacks[T],
     exec(Procs,Stacks).
 exec(_,Stacks) => true.
