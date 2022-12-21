@@ -1,0 +1,54 @@
+% https://adventofcode.com/2022/day/5
+% by Neng-Fa Zhou, 12/20/2022
+%        
+import util.
+
+main =>
+    read_input("aoc_22_5_input.txt",N,Stacks,Procs),
+    exec(Procs,Stacks),
+    TopCrates = [first(Stacks[I]) : I in 1..N, Stacks[I] != []],
+    println(TopCrates).
+
+read_input(File,N,Stacks,Procs) =>
+    Lines = read_file_lines(File),
+    StackNumsLine = [' ','1'|_],                            % the line " 1   2   3 ..."
+    once append(Pre, [StackNumsLine|Post], Lines),
+    N = len(split(StackNumsLine)),
+    Stacks = {[] : _ in 1..N},                              % empty stacks {[],[],...}
+    read_crates(reverse(Pre),Stacks),                       % process the lines in reverse order
+    read_procs(Post,Procs).
+
+read_crates([Line|Lines],Stacks) =>
+    read_crates_line(Line,Stacks,1),
+    read_crates(Lines,Stacks).
+read_crates(_,Stacks) => true.
+
+read_crates_line([' ',' ',' '|Line],Stacks,I) =>
+    if Line = [' '|LineR] then
+        read_crates_line(LineR,Stacks,I+1)
+    end.
+read_crates_line(['[',Crate,']'|Line],Stacks,I) =>
+    Stacks[I] := [Crate|Stacks[I]],
+    if Line = [' '|LineR] then
+        read_crates_line(LineR,Stacks,I+1)
+    end.
+	
+read_procs([Line|Lines],Procs) =>
+    read_procs_line(split(Line),Procs,ProcsR),
+    read_procs(Lines,ProcsR).
+read_procs(_,Procs) => Procs = [].
+
+read_procs_line(["move"|Tokens],Procs,ProcsR) =>
+    Tokens = [K,_from,F,_to,T],
+    Procs = [{to_int(K), to_int(F), to_int(T)}|ProcsR].
+read_procs_line(_,Procs,ProcsR) =>    Procs = ProcsR.
+
+exec([{K,F,T}|Procs],Stacks) =>                             % move K crates from F to T
+    FromStack = Stacks[F],
+    MovedCrates = take(FromStack,K),
+    RemCrates = drop(FromStack,K),
+    append(MovedCrates,Stacks[T],ToStack),
+    Stacks[F] := RemCrates,
+    Stacks[T] := ToStack,
+    exec(Procs,Stacks).
+exec(_,Stacks) => true.
