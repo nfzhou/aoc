@@ -1,0 +1,55 @@
+% https://adventofcode.com/2022/day/5
+% by Neng-Fa Zhou, 12/21/2022
+%        
+import util.
+
+main =>
+    read_graph("aoc_22_16_input.txt",G),                % graph G is defined by edge(A,B) and rate(A,R)
+    cl_facts(G),      
+    path('AA',30,[],P),
+    println(P).
+
+read_graph(File,G) =>
+    Lines = read_file_lines(File),
+    parse_lines(Lines,G).
+
+parse_lines([Line|Lines],G) =>
+    parse_line(Line,G,G1),
+    parse_lines(Lines,G1).
+parse_lines(_,G) => G = [].
+
+parse_line(S,G,Gr) ?=>
+    S = ['V',a,l,v,e,' '|S1],
+    append(VStr," has flow rate=",S2,S1),
+    V = to_atom(VStr),
+    append(RStr,[';'|S3],S2),
+    R = to_number(RStr),
+    G = [$rate(V,R)|G1],
+    once (append(_,"valves",S4,S3); append(_,"valve",S4,S3)),
+    Neibs = [to_atom(Token) : Token in split(S4,", ")],
+    add_edges(V,Neibs,G1,Gr).
+
+add_edges(V,[Neib|Neibs],G,Gr) =>
+    G = [$edge(V,Neib)|G1],
+    add_edges(V,Neibs,G1,Gr).
+add_edges(V,_,G,Gr) => G = Gr.
+
+table (+,+,+,max)
+path(_,_,OpenVs,P) ?=>                                      % stop openning further valves
+    P = sum([R*T : (V,T) in OpenVs, rate(V,R)]).
+path(V,T,OpenVs,P) =>
+    rate(V1,R),                                             % choose a valve V1 to open
+    R > 0,
+    not member((V1,_), OpenVs),
+    shortest_path(V,V1,Len),
+    T1 = T-Len-1,                                           % walk from V to V1 in Len steps and open V1
+    T1 > 0,
+    path(V1,T1,[(V1,T1)|OpenVs],P).
+
+table (+,+,min)
+shortest_path(X,X,Len) => Len = 0.
+shortest_path(X,Y,Len) =>
+    edge(X,Z),
+    shortest_path(Z,Y,Len1),
+    Len = Len1+1.
+    
