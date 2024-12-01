@@ -1,4 +1,4 @@
-% https://adventofcode.com/2024/day/1, part1
+% https://adventofcode.com/2024/day/1, part2
 import util.
 
 main([File]) =>
