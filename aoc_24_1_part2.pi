@@ -1,0 +1,35 @@
+% https://adventofcode.com/2024/day/1, part1
+import util.
+
+main([File]) =>
+    Ps = [{to_int(T1), to_int(T2)} : Line in read_file_lines(File), [T1,T2] = split(Line)],
+    L1 = sort([N1 : {N1,_} in Ps]),
+    L2 = sort([N2 : {_,N2} in Ps]),
+    ScoreDict = new_map(),
+    count_occurs_add_scores(L1,L2,ScoreDict,0,Score),
+    println(Score).
+
+count_occurs_add_scores([],L2,ScoreDict,Score0,Score) => Score = Score0.
+count_occurs_add_scores([N1|L1],L2,ScoreDict,Score0,Score),
+    ScoreDict.has_key(N1)
+=>
+    count_occurs_add_scores(L1,L2,ScoreDict,Score0+ScoreDict.get(N1),Score).
+count_occurs_add_scores([N1|L1],L2,ScoreDict,Score0,Score) =>
+    count_occurs(N1,0,Count,L2,L2R),
+    ThisScore is Count*N1,
+    ScoreDict.put(N1,ThisScore),
+    count_occurs_add_scores(L1,L2R,ScoreDict,Score0+ThisScore,Score).
+
+count_occurs(N1,Count0,Count,[],L2R) =>
+    Count = Count0, L2R = [].
+count_occurs(N1,Count0,Count,L2@[N2|_],L2R), N1 < N2 =>
+    Count = Count0, L2R = L2.
+count_occurs(N1,Count0,Count,[N1|L2],L2R) =>
+    count_occurs(N1,Count0+1,Count,L2,L2R).
+count_occurs(N1,Count0,Count,[_|L2],L2R) =>
+    count_occurs(N1,Count0,Count,L2,L2R).
+
+
+    
+    
+
