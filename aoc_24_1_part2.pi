@@ -28,8 +28,3 @@ count_occurs(N1,Count0,Count,[N1|L2],L2R) =>
     count_occurs(N1,Count0+1,Count,L2,L2R).
 count_occurs(N1,Count0,Count,[_|L2],L2R) =>
     count_occurs(N1,Count0,Count,L2,L2R).
-
-
-    
-    
-
