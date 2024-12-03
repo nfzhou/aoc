@@ -1,0 +1,29 @@
+% https://adventofcode.com/2024/day/3
+main([File]) =>
+    Cs = read_file_chars(File),
+    run(Cs,0,Acc,1),
+    println(Acc).
+
+run([],Acc0,Acc,Flag) => Acc = Acc0.
+run([d,o,n,'''',t,'(',')'|Cs],Acc0,Acc,_) =>   % '''' = '\''
+    run(Cs,Acc0,Acc,0).
+run([d,o,'(',')'|Cs],Acc0,Acc,_) =>
+    run(Cs,Acc0,Acc,1).
+run([m,u,l,'(',D1|Cs],Acc0,Acc,1), digit(D1) =>
+    extract_num(Cs, to_int(D1), Num1, Cs1),
+    (Cs1 = [',',D2|Cs2], digit(D2) ->
+        extract_num(Cs2, to_int(D2), Num2, Cs3),
+        (Cs3 = [')'|Cs4] ->
+            run(Cs4,Acc0+Num1*Num2,Acc,1)
+        ;
+            run(Cs3,Acc0,Acc,1)
+        )
+    ;
+        run(Cs1,Acc0,Acc,1)
+    ).
+run([_|Cs],Acc0,Acc,Flag) =>
+    run(Cs,Acc0,Acc,Flag).
+
+extract_num([D|Cs],Num0,Num,CsR), digit(D) =>
+    extract_num(Cs, Num0*10+to_int(D), Num, CsR).
+extract_num(Cs,Num0,Num,CsR) => Num = Num0, CsR = Cs.
