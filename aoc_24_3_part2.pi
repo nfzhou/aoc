@@ -5,7 +5,7 @@ main([File]) =>
     println(Acc).
 
 run([],Acc0,Acc,Flag) => Acc = Acc0.
-run([d,o,n,'''',t,'(',')'|Cs],Acc0,Acc,_) =>   % '''' = '\''
+run([d,o,n,'\'',t,'(',')'|Cs],Acc0,Acc,_) => 
     run(Cs,Acc0,Acc,0).
 run([d,o,'(',')'|Cs],Acc0,Acc,_) =>
     run(Cs,Acc0,Acc,1).
