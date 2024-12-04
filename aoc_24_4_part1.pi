@@ -1,0 +1,19 @@
+% https://adventofcode.com/2024/day/4
+
+main([File]) =>
+    Ls = read_file_lines(File),
+    M = {to_array(L) : L in Ls},
+    NRows = len(M),
+    NCols = len(M[1]),
+    println(sum([1 : R in 1..NRows, C in 1..NCols, M[R,C] == 'X', D in 1..8, find_xmas(D,M,NRows,NCols,R,C)])).
+
+find_xmas(1,M,NRows,NCols,R,C), C+3 =< NCols, xmas(M[R,C+1], M[R,C+2], M[R,C+3]) => true.
+find_xmas(2,M,NRows,NCols,R,C), C-3 >= 1, xmas(M[R,C-1], M[R,C-2], M[R,C-3]) => true.
+find_xmas(3,M,NRows,NCols,R,C), R+3 =< NRows, xmas(M[R+1,C], M[R+2,C], M[R+3,C]) => true.
+find_xmas(4,M,NRows,NCols,R,C), R-3 >= 1, xmas(M[R-1,C], M[R-2,C], M[R-3,C]) => true.
+find_xmas(5,M,NRows,NCols,R,C), R-3 >= 1, C-3 >= 1, xmas(M[R-1,C-1], M[R-2,C-2], M[R-3,C-3]) => true.
+find_xmas(6,M,NRows,NCols,R,C), R+3 =< NRows, C+3 =< NCols, xmas(M[R+1,C+1], M[R+2,C+2], M[R+3,C+3]) => true.
+find_xmas(7,M,NRows,NCols,R,C), R+3 =< NRows, C-3 >= 1, xmas(M[R+1,C-1], M[R+2,C-2], M[R+3,C-3]) => true.
+find_xmas(8,M,NRows,NCols,R,C), R-3 >= 1, C+3 =< NCols, xmas(M[R-1,C+1], M[R-2,C+2], M[R-3,C+3]) => true.
+
+xmas('M','A','S') => true.
