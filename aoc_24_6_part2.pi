@@ -38,7 +38,7 @@ cyclic(M,VisitedM,NRows,NCols,R,C,Dr,Dc) =>
             end
         end
     else
-        fail     % exit
+        fail     % no good because he can get out here
     end.
 
 turn_right(R,C,-1,0,Dr,Dc) => Dr = 0, Dc = 1.
