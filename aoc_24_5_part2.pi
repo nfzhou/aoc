@@ -1,0 +1,60 @@
+% https://adventofcode.com/2024/day/5, part2
+import util, cp.
+
+main([File]) =>
+    Ls = read_file_lines(File), 
+    proc_input(Ls,Rules,Updates),
+    println(sum([Update1[(len(Update)+1) div 2] : Update in Updates, not check(Update,Rules), rearrange(Update,Rules,Update1)])).
+
+proc_input([],Rules,Updates) =>
+    Rules = [], Updates = [].
+proc_input([L|Ls],Rules,Updates), membchk('|',L) =>
+    Rules = [map(to_int, split(L,"|"))|RulesR],
+    proc_input(Ls,RulesR,Updates).
+proc_input([L|Ls],Rules,Updates) =>
+    Update = map(to_int, split(L,",")),
+    if Update == [] then
+        Updates = UpdatesR
+    else
+        Updates = [Update|UpdatesR]
+    end,
+    proc_input(Ls,Rules,UpdatesR).
+
+check(Update,Rules) =>
+    S = new_set(Update),
+    Rules1 = [R : R in Rules, R = [N1,N2], S.has_key(N1), S.has_key(N2)],
+    Max = S.size(),
+    Vs = new_list(Max),
+    Vs :: 0..Max-1,
+    VarDic = new_map(),
+    foreach ({N,V} in zip(Update,Vs))
+        VarDic.put(N,V)
+    end,
+    increasing_strict(Vs),   % built-in 
+    foreach ([N1,N2] in Rules1)
+        V1 = VarDic.get(N1),
+        V2 = VarDic.get(N2),
+        V1 #< V2
+    end,
+    solve(Vs).
+
+rearrange(Update,Rules,Update1) =>
+    S = new_set(Update),
+    Rules1 = [R : R in Rules, R = [N1,N2], S.has_key(N1), S.has_key(N2)],
+    Max = S.size(),
+    Vs = new_list(Max),
+    Vs :: 1..Max,
+    VarDic = new_map(),
+    foreach ({N,V} in zip(Update,Vs))
+        VarDic.put(N,V)
+    end,
+    foreach ([N1,N2] in Rules1)
+        V1 = VarDic.get(N1),
+        V2 = VarDic.get(N2),
+        V1 #< V2
+    end,
+    solve(Vs),
+    Update1 = new_array(Max),
+    foreach ({N,V} in zip(Update,Vs))
+        Update1[V] = N
+    end.
