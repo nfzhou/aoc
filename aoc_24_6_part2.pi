@@ -1,0 +1,47 @@
+% https://adventofcode.com/2024/day/6
+
+main([File]) =>
+    Ls = read_file_lines(File),
+    M = {to_array(L) : L in Ls},
+    NRows = len(M),
+    NCols = len(M[1]),
+    between(1,NRows,R0),
+    between(1,NCols,C0),
+    M[R0,C0] == '^',!,
+    Count = 0,
+    foreach (R in 1..NRows, C in 1..NCols, M[R,C] == '.')
+        M[R,C] := '#',
+        if not not cyclic(M,NRows,NCols,R0,C0) then
+            Count := Count+1
+        end,
+        M[R,C] := '.'
+    end,
+    println(Count).
+
+cyclic(M,NRows,NCols,R,C) =>
+    VisitedM = new_array(NRows,NCols),
+    bind_vars(VisitedM, []),
+    VisitedM[R,C] := [(-1,0)],
+    cyclic(M,VisitedM,NRows,NCols,R,C,-1,0).
+
+cyclic(M,VisitedM,NRows,NCols,R,C,Dr,Dc) =>
+    R1 = R+Dr,
+    C1 = C+Dc,
+    if (R1 >= 1, R1 =< NRows, C1 >= 1, C1 =< NCols) then
+        if M[R1,C1] == '#' then
+            turn_right(R,C,Dr,Dc,Dr1,Dc1),
+            cyclic(M,VisitedM,NRows,NCols,R,C,Dr1,Dc1)
+        else
+            if not membchk((Dr,Dc), VisitedM[R1,C1]) then
+                VisitedM[R1,C1] := [(Dr,Dc)|VisitedM[R1,C1]],
+                cyclic(M,VisitedM,NRows,NCols,R1,C1,Dr,Dc)
+            end
+        end
+    else
+        fail     % exit
+    end.
+
+turn_right(R,C,-1,0,Dr,Dc) => Dr = 0, Dc = 1.
+turn_right(R,C,0,1,Dr,Dc) => Dr = 1, Dc = 0.
+turn_right(R,C,1,0,Dr,Dc) => Dr = 0, Dc = -1.
+turn_right(R,C,0,-1,Dr,Dc) => Dr = -1, Dc = 0.

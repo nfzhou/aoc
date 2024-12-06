@@ -1,0 +1,39 @@
+% https://adventofcode.com/2024/day/6
+
+main([File]) =>
+    Ls = read_file_lines(File),
+    M = {to_array(L) : L in Ls},
+    NRows = len(M),
+    NCols = len(M[1]),
+    between(1,NRows,R),
+    between(1,NCols,C),
+    M[R,C] == '^',!,
+    VisitedM = new_array(NRows,NCols),
+    VisitedM[R,C] = 1,
+    walk(M,VisitedM,NRows,NCols,R,C,-1,0,1,Count),
+    println(Count).
+
+walk(M,VisitedM,NRows,NCols,R,C,Dr,Dc,Count0,Count) =>
+    R1 = R+Dr,
+    C1 = C+Dc,
+    (R1 >= 1, R1 =< NRows, C1 >= 1, C1 =< NCols ->
+        (M[R1,C1] == '#' ->
+            turn_right(R,C,Dr,Dc,Dr1,Dc1),
+	    walk(M,VisitedM,NRows,NCols,R,C,Dr1,Dc1,Count0,Count)
+        ;
+	    (var(VisitedM[R1,C1]) -> Count1 is Count0+1, VisitedM[R1,C1] = 1; Count1 = Count0),
+  	    walk(M,VisitedM,NRows,NCols,R1,C1,Dr,Dc,Count1,Count)
+	 )
+    ;
+        Count = Count0
+    ).
+
+turn_right(R,C,-1,0,Dr,Dc) => Dr = 0, Dc = 1.
+turn_right(R,C,0,1,Dr,Dc) => Dr = 1, Dc = 0.
+turn_right(R,C,1,0,Dr,Dc) => Dr = 0, Dc = -1.
+turn_right(R,C,0,-1,Dr,Dc) => Dr = -1, Dc = 0.
+
+    
+
+    
+    
