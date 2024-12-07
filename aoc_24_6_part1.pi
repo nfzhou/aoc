@@ -18,7 +18,7 @@ walk(M,VisitedM,NRows,NCols,R,C,Dr,Dc,Count0,Count) =>
     C1 = C+Dc,
     (R1 >= 1, R1 =< NRows, C1 >= 1, C1 =< NCols ->
         (M[R1,C1] == '#' ->
-            turn_right(R,C,Dr,Dc,Dr1,Dc1),
+            turn_right(Dr,Dc,Dr1,Dc1),
 	    walk(M,VisitedM,NRows,NCols,R,C,Dr1,Dc1,Count0,Count)
         ;
 	    (var(VisitedM[R1,C1]) -> Count1 is Count0+1, VisitedM[R1,C1] = 1; Count1 = Count0),
@@ -28,10 +28,10 @@ walk(M,VisitedM,NRows,NCols,R,C,Dr,Dc,Count0,Count) =>
         Count = Count0
     ).
 
-turn_right(R,C,-1,0,Dr,Dc) => Dr = 0, Dc = 1.
-turn_right(R,C,0,1,Dr,Dc) => Dr = 1, Dc = 0.
-turn_right(R,C,1,0,Dr,Dc) => Dr = 0, Dc = -1.
-turn_right(R,C,0,-1,Dr,Dc) => Dr = -1, Dc = 0.
+turn_right(-1,0,Dr,Dc) => Dr = 0, Dc = 1.
+turn_right(0,1,Dr,Dc) => Dr = 1, Dc = 0.
+turn_right(1,0,Dr,Dc) => Dr = 0, Dc = -1.
+turn_right(0,-1,Dr,Dc) => Dr = -1, Dc = 0.
 
     
 

@@ -29,7 +29,7 @@ cyclic(M,VisitedM,NRows,NCols,R,C,Dr,Dc) =>
     C1 = C+Dc,
     if (R1 >= 1, R1 =< NRows, C1 >= 1, C1 =< NCols) then
         if M[R1,C1] == '#' then
-            turn_right(R,C,Dr,Dc,Dr1,Dc1),
+            turn_right(Dr,Dc,Dr1,Dc1),
             cyclic(M,VisitedM,NRows,NCols,R,C,Dr1,Dc1)
         else
             if not membchk((Dr,Dc), VisitedM[R1,C1]) then
@@ -41,7 +41,7 @@ cyclic(M,VisitedM,NRows,NCols,R,C,Dr,Dc) =>
         fail     % no good because he can get out here
     end.
 
-turn_right(R,C,-1,0,Dr,Dc) => Dr = 0, Dc = 1.
-turn_right(R,C,0,1,Dr,Dc) => Dr = 1, Dc = 0.
-turn_right(R,C,1,0,Dr,Dc) => Dr = 0, Dc = -1.
-turn_right(R,C,0,-1,Dr,Dc) => Dr = -1, Dc = 0.
+turn_right(-1,0,Dr,Dc) => Dr = 0, Dc = 1.
+turn_right(0,1,Dr,Dc) => Dr = 1, Dc = 0.
+turn_right(1,0,Dr,Dc) => Dr = 0, Dc = -1.
+turn_right(0,-1,Dr,Dc) => Dr = -1, Dc = 0.
