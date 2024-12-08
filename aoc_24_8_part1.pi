@@ -1,0 +1,38 @@
+% https://adventofcode.com/2024/day/8, part-1
+
+main([File]) =>
+    Ls = read_file_lines(File),
+    M = {to_array(L) : L in Ls},
+    NRows = len(M),
+    NCols = len(M[1]),
+    APosDict = new_map(),
+    foreach (R in 1..NRows, C in 1..NCols)
+        if M[R,C] != '.' then
+            APosDict.put(M[R,C], [(R,C)|APosDict.get(M[R,C], [])])
+        end
+    end,
+    AntePosLs = values(APosDict),
+    NodeM = new_array(NRows,NCols),
+    bind_vars(NodeM, 0),
+    foreach (AntePosL in AntePosLs)
+        add_antinodes(AntePosL,NodeM,NRows,NCols)
+    end,
+    println(sum([NodeM[R,C] : R in 1..NRows, C in 1..NCols])).
+    
+add_antinodes([_],NodeM,NRows,NCols) => true.
+add_antinodes([A|As],NodeM,NRows,NCols) =>
+    add_antinodes(A,As,NodeM,NRows,NCols),
+    add_antinodes(As,NodeM,NRows,NCols).
+
+add_antinodes(A,[],NodeM,NRows,NCols) => true.
+add_antinodes(A@(R1,C1),[(R2,C2)|As],NodeM,NRows,NCols) =>
+    add_antinode(R1,C1,R2,C2,NodeM,NRows,NCols),
+    add_antinode(R2,C2,R1,C1,NodeM,NRows,NCols),
+    add_antinodes(A,As,NodeM,NRows,NCols).
+
+add_antinode(R1,C1,R2,C2,NodeM,NRows,NCols) =>
+    R = R1 - (R2-R1),
+    C = C1 - (C2-C1),
+    if R >= 1, R =< NRows, C >= 1, C =< NCols then
+        NodeM[R,C] := 1
+    end.
