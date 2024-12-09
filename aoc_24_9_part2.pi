@@ -1,5 +1,5 @@
 % https://adventofcode.com/2024/day/9, part-2
-
+% Thanks to Cristian Grozea for finding a bug in the original version.
 
 main([File]) =>
     Str = read_file_chars(File),
