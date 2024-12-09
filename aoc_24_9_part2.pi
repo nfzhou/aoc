@@ -1,0 +1,61 @@
+% https://adventofcode.com/2024/day/9, part-2, still incorrect
+
+
+main([File]) =>
+    Str = read_file_chars(File),
+    L = [to_int(C) : C in Str, digit(C)],
+    num_blocks(L,0,NumberedL),
+    A = to_array(NumberedL),
+    move_blocks(A,1,len(A)),
+    Sum = sum([A[I+1]*I : I in 0..len(A)-1, A[I+1] > 0]),
+    println(Sum).
+
+num_blocks([],Id,NumberedL) =>
+    NumberedL = [].
+num_blocks([N],Id,NumberedL) =>
+    dup(N,Id,NumberedL,[]).
+num_blocks([N1,N2|L],Id,NumberedL) =>
+    dup(N1,Id,NumberedL,NumberedL1),
+    dup(N2,-1,NumberedL1,NumberedL2),
+    num_blocks(L,Id+1,NumberedL2).
+
+dup(0,Id,L,LR) => L = LR.
+dup(N,Id,L,LR) =>
+    L = [Id|L1],
+    dup(N-1,Id,L1,LR).
+
+move_blocks(A,I,J), I >= J => true.
+move_blocks(A,I,J), A[J] < 0 => move_blocks(A,I,J-1).
+move_blocks(A,I,J), A[I] >= 0 => move_blocks(A,I+1,J).
+move_blocks(A,I,J) =>
+    file_size(A,A[J],J-1,1,FileSize),
+    if search_free_space(A,I,J-FileSize,FileSize,I1) then  % move the file to A[I1]..A[I1-FileSize-1]
+        foreach (K in 0..FileSize-1)
+            A[I1+K] := A[J-K],
+            A[J-K] := -1
+        end,
+    end,
+    move_blocks(A,I,J-FileSize).
+
+file_size(A,Id,I,Size0,Size), A[I] == Id =>
+    file_size(A,Id,I-1,Size0+1,Size).
+file_size(A,Id,I,Size0,Size) =>
+    Size = Size0.
+
+search_free_space(A,I,J,Size,ResI), I+Size > J => fail.
+search_free_space(A,I,J,Size,ResI), A[I] >= 0 =>
+    search_free_space(A,I+1,J,Size,ResI).
+search_free_space(A,I,J,Size,ResI) ?=>
+    foreach (K in I+1..I+Size-1)
+        A[K] < 0
+    end,!,
+    ResI = I.
+search_free_space(A,I,J,Size,ResI) =>
+    search_free_space(A,I+1,J,Size,ResI).
+    
+
+
+
+
+
+
