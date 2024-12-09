@@ -26,13 +26,13 @@ add_antinodes([A|As],NodeM,NRows,NCols) =>
 
 add_antinodes(A,[],NodeM,NRows,NCols) => true.
 add_antinodes(A@(R1,C1),[(R2,C2)|As],NodeM,NRows,NCols) =>
-    add_antinode(R1,C1,R2,C2,NodeM,NRows,NCols),
-    add_antinode(R2,C2,R1,C1,NodeM,NRows,NCols),
+    add_antinode(R1,C1,(R1-R2),(C1-C2),NodeM,NRows,NCols),
+    add_antinode(R2,C2,(R2-R1),(C2-C1),NodeM,NRows,NCols),
     add_antinodes(A,As,NodeM,NRows,NCols).
 
-add_antinode(R1,C1,R2,C2,NodeM,NRows,NCols) =>
-    R = R1 - (R2-R1),
-    C = C1 - (C2-C1),
+add_antinode(R0,C0,Dr,Dc,NodeM,NRows,NCols) =>
+    R = R0 + Dr,
+    C = C0 + Dc,
     if R >= 1, R =< NRows, C >= 1, C =< NCols then
         NodeM[R,C] := 1
     end.
