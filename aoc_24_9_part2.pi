@@ -1,4 +1,4 @@
-% https://adventofcode.com/2024/day/9, part-2, still incorrect
+% https://adventofcode.com/2024/day/9, part-2
 
 
 main([File]) =>
@@ -42,7 +42,7 @@ file_size(A,Id,I,Size0,Size), A[I] == Id =>
 file_size(A,Id,I,Size0,Size) =>
     Size = Size0.
 
-search_free_space(A,I,J,Size,ResI), I+Size > J => fail.
+search_free_space(A,I,J,Size,ResI), I+Size-1 > J => fail.
 search_free_space(A,I,J,Size,ResI), A[I] >= 0 =>
     search_free_space(A,I+1,J,Size,ResI).
 search_free_space(A,I,J,Size,ResI) ?=>
