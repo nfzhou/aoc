@@ -1,0 +1,52 @@
+% https://adventofcode.com/2024/day/10, part-2
+
+main([File]) =>
+    Ls = read_file_lines(File),
+    M = {Row : L in Ls, Row = {cond(C == '.', -1, to_int(C)) : C in L}},
+    NRows = len(M),
+    NCols = len(M[1]),
+    Hs = [(R,C) : R in 1..NRows, C in 1..NCols, M[R,C] == 0],
+    Sum = 0,
+    foreach ((R,C) in Hs)
+        count(M,NRows,NCols,R,C,Count),
+        Sum := Sum+Count
+    end,
+    println(Sum).
+
+count(M,NRows,NCols,R,C,Count), M[R,C] == 9 =>
+    Count = 1.
+count(M,NRows,NCols,R,C,Count) =>
+    Dr1 = 0, Dc1 = -1,
+    if movable(M,NRows,NCols,R,C,Dr1,Dc1) then
+        count(M,NRows,NCols,R+Dr1,C+Dc1,Count1)
+    else
+        Count1 = 0
+    end,
+    Dr2 = 0, Dc2 = 1,
+    if movable(M,NRows,NCols,R,C,Dr2,Dc2) then
+        count(M,NRows,NCols,R+Dr2,C+Dc2,Count2)
+    else
+        Count2 = 0
+    end,
+    Dr3 = -1, Dc3 = 0,
+    if movable(M,NRows,NCols,R,C,Dr3,Dc3) then
+        count(M,NRows,NCols,R+Dr3,C+Dc3,Count3)
+    else
+        Count3 = 0
+    end,
+    Dr4 = 1, Dc4 = 0,
+    if movable(M,NRows,NCols,R,C,Dr4,Dc4) then
+        count(M,NRows,NCols,R+Dr4,C+Dc4,Count4)
+    else
+        Count4 = 0
+    end,
+    Count = Count1+Count2+Count3+Count4.
+
+movable(M,NRows,NCols,R,C,Dr,Dc) =>
+    R1 = R+Dr,
+    C1 = C+Dc,
+    R1 >= 1, R1 =< NRows,
+    C1 >= 1, C1 =< NCols,
+    M[R1,C1] == M[R,C]+1.
+    
+
