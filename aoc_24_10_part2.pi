@@ -13,6 +13,7 @@ main([File]) =>
     end,
     println(Sum).
 
+table
 count(M,NRows,NCols,R,C,Count), M[R,C] == 9 =>
     Count = 1.
 count(M,NRows,NCols,R,C,Count) =>
