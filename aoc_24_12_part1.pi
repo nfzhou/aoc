@@ -1,0 +1,40 @@
+% https://adventofcode.com/2024/day/12, part-1
+
+main([File]) =>
+    Ls = read_file_lines(File),
+    M = {to_array(L) : L in Ls},
+    NRows = len(M),
+    NCols = len(M[1]),
+    MaskM = new_array(NRows,NCols),
+    comp_cost_regions(M,NRows,NCols,MaskM,0,Cost),
+    println(Cost).
+
+comp_cost_regions(M,NRows,NCols,MaskM,Cost0,Cost),
+    between(1,NRows,R0),
+    between(1,NCols,C0),
+    var(MaskM[R0,C0])
+=>    
+    measure_region([(R0,C0)],M,NRows,NCols,MaskM,0,Area,0,Peri),
+    Cost1 is Cost0+Area*Peri,
+    comp_cost_regions(M,NRows,NCols,MaskM,Cost1,Cost).
+comp_cost_regions(M,NRows,NCols,MaskM,Cost0,Cost) => Cost = Cost0.
+
+measure_region([],M,NRows,NCols,MaskM,Area0,Area,Peri0,Peri) =>
+    Area = Area0,
+    Peri = Peri0.
+measure_region([(R,C)|L],M,NRows,NCols,MaskM,Area0,Area,Peri0,Peri), var(MaskM[R,C]) =>
+    MaskM[R,C] = 1,    % mark it
+    PeriU = cond((R==1 || M[R-1,C] != M[R,C]), 1, 0),
+    PeriD = cond((R==NRows || M[R+1,C] != M[R,C]), 1, 0),
+    PeriL = cond((C==1 || M[R,C-1] != M[R,C]), 1, 0),
+    PeriR = cond((C==NCols || M[R,C+1] != M[R,C]), 1, 0),
+    ThisPeri = PeriU + PeriD + PeriL + PeriR,
+    Neibs = [(R1,C1) : (R1,C1) in [(R-1,C),(R+1,C),(R,C-1),(R,C+1)],
+                       R1 >= 1, R1 =< NRows, C1 >= 1, C1 =< NCols],
+    Unmeasured = [(R1,C1) : (R1,C1) in Neibs, var(MaskM[R1,C1]), M[R1,C1] == M[R,C]],
+    measure_region(Unmeasured,M,NRows,NCols,MaskM,Area0+1,Area1,Peri0+ThisPeri,Peri1),
+    measure_region(L,M,NRows,NCols,MaskM,Area1,Area,Peri1,Peri).
+measure_region([_|L],M,NRows,NCols,MaskM,Area0,Area,Peri0,Peri) =>
+    measure_region(L,M,NRows,NCols,MaskM,Area0,Area,Peri0,Peri).
+
+        
