@@ -20,8 +20,6 @@ proc_insts([_|Lines],Count0,Count) =>
     proc_insts(Lines,Count0,Count).
 
 win(PAx, PAy, PBx, PBy, Tx, Ty, NTokens) ?=>
-    println($win(PAx, PAy, PBx, PBy, Tx, Ty, NTokens)),fail.
-win(PAx, PAy, PBx, PBy, Tx, Ty, NTokens) ?=>
     UB = max(Tx,Ty),
     Na :: 0..UB,
     Nb :: 0..UB,
