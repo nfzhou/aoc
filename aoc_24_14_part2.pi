@@ -1,0 +1,64 @@
+% https://adventofcode.com/2024/day/14, part-2
+% Stole Hakan Kjellerstrand's idea of using 27 1's to describe the first tree
+
+import util.
+
+main([File]) =>
+    Lines = read_file_lines(File),
+    proc(Lines,Robots),
+    W = 101,
+    H = 103,
+    next(N),
+    println(n=N),
+    Ps = [{R,C} : {R0,C0,Vr,Vc} in Robots,   % positions of robots after N seconds
+          R is (R0+N*Vr) mod H,
+          C is (C0+N*Vc) mod W],
+    M = new_array(H,W),    % image
+    bind_vars(M,0),
+    foreach (R in 0..H-1, C in 0..W-1, {R1,C1} in Ps)
+        if R == R1 && C == C1 then
+            M[R+1,C+1] := 1
+        end
+    end,
+    sub_image({{1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}}, M),  
+    foreach (Row in M)
+        foreach (Cell in Row)
+            if Cell == 1 then
+                print(1)
+            else
+                print('.')
+            end
+        end,
+        nl
+    end,
+    println(N).
+    
+next(N) ?=> N = 1.
+next(N) => next(P), N is P+1.
+
+proc([],Robots) => Robots = [].
+proc([Line|Lines],Robots), Line = [p,'='|LineR] =>
+    append(Str1,[v,'='|Str2],LineR),
+    [C,R] = split(Str1, ","),
+    [Vc,Vr] = split(Str2, ","),
+    Robots = [{to_int(R), to_int(C), to_int(Vr), to_int(Vc)}|RobotsR],
+    proc(Lines,RobotsR).
+
+% it's cheating, but we need a description of the tree; otherwise,
+% we have to check it with eyes, which would be very time consuming
+sub_image(SubM,M) =>
+    H = len(M),
+    W = len(M[1]),
+    SubH = len(SubM),
+    SubW = len(SubM[1]),
+    between(1, H-SubH+1, StartR),
+    between(1, W-SubW+1, StartC),
+    foreach (SubR in 1..SubH, SubC in 1..SubW)
+        M[StartR+SubR-1,StartC+SubC-1] == SubM[SubR,SubC]
+    end,
+    writeln((StartR,StartC)).
+    
+   
+   
+        
+
