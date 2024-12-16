@@ -1,0 +1,71 @@
+% https://adventofcode.com/2024/day/15, part-1
+
+main([File]) =>
+    Ls = read_file_lines(File),
+    M = {to_array(L) : L in Ls, L=['#'|_]},
+    NRows = len(M),
+    NCols = len(M[1]),
+    Steps = [L : L in Ls, L=[Ch|_], Ch != '#', Ch != ' '],
+    writeln(M),
+    writeln(Steps),
+    between(2,NRows,R0),
+    between(2,NCols,C0),
+    M[R0,C0] == '@',!,
+    exec(R0,C0,M,Steps,_,_),
+    GPS = 0,
+    foreach (R in 2..NRows-1, C in 2..NCols-1)
+        if M[R,C] == 'O' then
+           GPS := GPS + (R-1)*100+(C-1)
+        end
+    end,
+    println(GPS).
+
+exec(R0,C0,M,[],R,C) => R = R0, C = C0.
+exec(R0,C0,M,[D|Ds],R,C) =>
+    exec(R0,C0,M,D,R1,C1),
+    exec(R1,C1,M,Ds,R,C).
+exec(R0,C0,M,'>',R,C) =>
+    exec(R0,C0,M,0,1,R,C).
+exec(R0,C0,M,'<',R,C) =>
+    exec(R0,C0,M,0,-1,R,C).
+exec(R0,C0,M,'^',R,C) =>
+    exec(R0,C0,M,-1,0,R,C).
+exec(R0,C0,M,'v',R,C) =>
+    exec(R0,C0,M,1,0,R,C).
+
+exec(R0,C0,M,Dr,Dc,R,C) =>
+    R1 = R0+Dr,
+    C1 = C0+Dc,
+    move_robot(R0,C0,R1,C1,M,Dr,Dc,R,C).
+
+move_robot(R0,C0,R1,C1,M,Dr,Dc,R,C), M[R1,C1] == 'O' =>
+    if movable(R1,C1,M,Dr,Dc) then
+        move_box(R1,C1,M,Dr,Dc),
+        M[R0,C0] := '.',
+        M[R1,C1] := '@',
+        R = R1, C = C1
+    else
+        R = R0, C = C0
+    end.
+move_robot(R0,C0,R1,C1,M,Dr,Dc,R,C), M[R1,C1] == '#' =>
+    R = R0, C = C0.    
+move_robot(R0,C0,R1,C1,M,Dr,Dc,R,C) =>
+    M[R0,C0] := '.',
+    M[R1,C1] := '@',
+    R = R1, C = C1.
+
+movable(R0,C0,M,Dr,Dc), M[R0,C0] == '.' => true.
+movable(R0,C0,M,Dr,Dc), M[R0,C0] == 'O' =>
+    R1 = R0+Dr,
+    C1 = C0+Dc,
+    movable(R1,C1,M,Dr,Dc).
+
+move_box(R0,C0,M,Dr,Dc), M[R0,C0] == '.' =>
+    M[R0,C0] := 'O'.
+move_box(R0,C0,M,Dr,Dc) =>     % M[R0,C0] == 'O'
+    R1 = R0+Dr,
+    C1 = C0+Dc,
+    move_box(R1,C1,M,Dr,Dc).
+
+
+    
