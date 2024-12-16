@@ -6,8 +6,6 @@ main([File]) =>
     NRows = len(M),
     NCols = len(M[1]),
     Steps = [L : L in Ls, L=[Ch|_], Ch != '#', Ch != ' '],
-    writeln(M),
-    writeln(Steps),
     between(2,NRows,R0),
     between(2,NCols,C0),
     M[R0,C0] == '@',!,
