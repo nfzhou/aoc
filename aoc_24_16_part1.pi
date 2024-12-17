@@ -14,21 +14,21 @@ main([File]) =>
     M[Re,Ce] == 'E',
     !,
     Dr = 0, Dc = 1,   % east
-    best_plan_unbounded([Dr,Dc,Rs,Cs,Re,Ce|M],_,Cost),
+    best_plan_unbounded([Dr,Dc,Rs,Cs,Re,Ce,M],_,Cost),
     println(Cost).
     
-final([Dr,Dc,R,C,R,C|M]) => true.
+final([Dr,Dc,R,C,R,C,M]) => true.
 
-action([Dr,Dc,R,C,Re,Ce|M],NextS,Action,Cost) ?=>
+action([Dr,Dc,R,C,Re,Ce,M],NextS,Action,Cost) ?=>
     turn(Dr,Dc,Dr1,Dc1),
-    NextS = [Dr1,Dc1,R,C,Re,Ce|M],
+    NextS = [Dr1,Dc1,R,C,Re,Ce,M],
     Action = rotate,
     Cost = 1000.
-action([Dr,Dc,R,C,Re,Ce|M],NextS,Action,Cost) =>
+action([Dr,Dc,R,C,Re,Ce,M],NextS,Action,Cost) =>
     R1 = R+Dr,
     C1 = C+Dc,
     M[R1,C1] !== '#',
-    NextS = [Dr,Dc,R1,C1,Re,Ce|M],    
+    NextS = [Dr,Dc,R1,C1,Re,Ce,M],    
     Action = move,
     Cost = 1.
 
