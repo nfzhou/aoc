@@ -1,7 +1,5 @@
 % https://adventofcode.com/2024/day/16, part-2
-% It's correct on the sample instances, but takes too long on the large instance
-
-import planner.
+% use the cost 94444 obtained from part-1 as the upper bound
 
 main([File]) =>
     Ls = read_file_lines(File),
@@ -16,32 +14,35 @@ main([File]) =>
     M[Re,Ce] == 'E',
     !,
     Dr = 0, Dc = 1,   % east
-    best_plan_unbounded([Dr,Dc,Rs,Cs,Re,Ce|M],Plan,OptCost),
-    OnBPathM = new_array(NRows,NCols),
-    mark_tiles_on_best_path(Dr,Dc,Rs,Cs,M,Plan,OnBPathM),
-    foreach (R in 2..NRows-1, C in 2..NCols-1, M[R,C] !== '#', var(OnBPathM[R,C]))
-        if on_best_path(R,C,Dr,Dc,Rs,Cs,Re,Ce,M,OptCost,OnBPathM) then
-            OnBPathM[R,C] = 1
-         end
+    Count = 2,
+    foreach (R in 2..NRows-1, C in 2..NCols-1, (R,C) != (Rs,Cs), (R,C) != (Re,Ce), M[R,C] !== '#')
+        if best_path([Dr,Dc,Rs,Cs,M,R,C,Re,Ce],_) then
+            Count := Count+1
+        end
     end,
-    println(sum([1 : R in 2..NRows-1, C in 2..NCols-1, OnBPathM[R,C] == 1])).
-    
-final([Dr,Dc,R,C,R,C|M]) => true.
+    println(Count).
 
-action([Dr,Dc,R,C,Re,Ce|M],NextS,Action,Cost) ?=>
+% state [Dr,Dc,R,C,M,Rv,Cv,Re,Ce]
+% find a shortest path from (R,C) to (Re,Ce) through via point (Rv,Cv).
+table (+,min)
+best_path([Dr,Dc,R,C,M,R,C],Cost) => Cost = 0.          % via point eliminated, goal reached
+best_path([Dr,Dc,R,C,M,R,C|T],Cost) =>                  % via point reached
+    best_path([Dr,Dc,R,C,M|T],Cost).
+best_path([Dr,Dc|T],Cost) ?=>                           % rotate
     turn(Dr,Dc,Dr1,Dc1),
-    NextS = [Dr1,Dc1,R,C,Re,Ce|M],
-    Action = $rotate(Dr1,Dc1),
-    Cost = 1000.
-action([Dr,Dc,R,C,Re,Ce|M],NextS,Action,Cost) =>
+    best_path([Dr1,Dc1|T],Cost1),
+    Cost = Cost1+1000,
+    Cost =< 94444.
+best_path([Dr,Dc,R,C,M|T],Cost) =>                     % move
     R1 = R+Dr,
     C1 = C+Dc,
-    M[R1,C1] !== '#',
-    NextS = [Dr,Dc,R1,C1,Re,Ce|M],    
-    Action = move,
-    Cost = 1.
+    M[R1,C1] != '#',
+    best_path([Dr,Dc,R1,C1,M|T],Cost1),
+    Cost = Cost1+1,
+    Cost =< 94444.    
 
 % rotate 
+index (+,+,-,-)
 turn(-1,0,0,1).
 turn(-1,0,0,-1).
 turn(0,1,1,0).
@@ -51,26 +52,3 @@ turn(1,0,0,-1).
 turn(0,-1,1,0).
 turn(0,-1,-1,0).
 
-mark_tiles_on_best_path(Dr,Dc,R,C,M,[],OnBPathM) =>
-    OnBPathM[R,C] = 1.    
-mark_tiles_on_best_path(Dr,Dc,R,C,M,[rotate(Dr1,Dc1)|Plan],OnBPathM) =>
-    mark_tiles_on_best_path(Dr1,Dc1,R,C,M,Plan,OnBPathM).
-mark_tiles_on_best_path(Dr,Dc,R,C,M,[_|Plan],OnBPathM) =>
-    OnBPathM[R,C] = 1,
-    mark_tiles_on_best_path(Dr,Dc,R+Dr,C+Dc,M,Plan,OnBPathM).
-
-
-% (R,C) is on a best path
-on_best_path(R,C,Dr,Dc,Rs,Cs,Re,Ce,M,OptCost,OnBPathM) =>
-    State0 = [Dr,Dc,Rs,Cs,R,C|M],
-    best_plan_unbounded(State0,Plan1,Cost1),
-    if member($rotate(Dr1,Dc1),reverse(Plan1)) then
-        Dr2 = Dr1, Dc2 = Dc1
-    else
-        Dr2 = Dr, Dc2 = Dc
-    end,
-    State1 = [Dr2,Dc2,R,C,Re,Ce|M],
-    best_plan_unbounded(State1,Plan2,Cost2),
-    Cost1 + Cost2 = OptCost,
-    mark_tiles_on_best_path(Dr,Dc,Rs,Cs,M,Plan1++Plan2,OnBPathM).
-    
