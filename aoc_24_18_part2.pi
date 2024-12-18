@@ -14,8 +14,8 @@ main([File]) =>
     println(Coord).
 
 % binary search
-search(M,L@[Coord],Res) =>
-    search_aux(M,L,[],Res).
+search(M,[Coord],Res) =>
+    Res = Coord.
 search(M,L,Res) =>
     N = len(L),
     break_list(L,N//2,L1,L2),
@@ -27,8 +27,6 @@ search_aux(M,L1,L2,Res) ?=>
     end,
     shortest_path(1,1,M,_),!,
     search(M,L2,Res).
-search_aux(M,L1,L2,Res), L1 = [Coord] =>
-    Res = Coord.
 search_aux(M,L1,L2,Res) =>
     search(M,L1,Res).
     
