@@ -1,0 +1,62 @@
+% https://adventofcode.com/2024/day/17, part-2
+% tailored to this particular input
+
+import util, sat.
+
+main =>
+    gen(A,[2,4,1,5,7,5,0,3,4,0,1,6,5,5,3,0]),
+    solve($[min(A)],A),
+    println(A).
+
+/* the program is the same as the output
+2,4,  B = A mod 8
+1,5,  B = B^5
+7,5,  C = A/2**B
+0,3,  A = A/2**3
+4,0,  B = B ^ C
+1,6,  B = B ^ 6
+5,5,  out B mod 8
+3,0
+*/
+
+% use constraints to generate possible candidates for A
+gen(A,[]) => A = 0.  % halt after A=0
+gen(A,[Z|Zs]) =>
+    VA = new_array(56),    % A's binary representation
+    VA :: 0..1,
+    A #= sum([2**(K-1)*VA[K] : K in 1..56]),
+% 2,4,  B = A mod 8
+%    B1 #= VA[1]+ 2*VA[2]+ 4*VA[3],
+% 1,5,  B = B^5
+    VB2 = new_array(56),
+    foreach (I in 4..56) VB2[I] = 0 end,
+    VB2 :: 0..1,
+    VB2[1] #= 1-VA[1],
+    VB2[2] #= VA[2],
+    VB2[3] #= 1-VA[3],
+    B2 #= (1-VA[1]) + 2*VA[2] + 4*(1-VA[3]),
+% 7,5,  C = A/2**B
+    C1 #= A div (2**B2),
+    VC1 = new_array(56),
+    VC1 :: 0..1,
+    C1 #= sum([2**(K-1)*VC1[K] : K in 1..56]),
+% 0,3,  A = A/2**3
+    A2 #= sum([2**(K-4)*VA[K] : K in 4..56]),
+% 4,0,  B = B ^ C
+    VB3 = new_array(56),
+    VB3 :: 0..1,
+    foreach (I in 1..56)
+        VB3[I] #= VB2[I] #^ VC1[I]
+    end,
+% 1,6,  B = B ^ 6
+    VB4 = new_array(56),
+    foreach (I in 4..56) VB4[I] = VB3[I] end,
+    VB4 :: 0..1,
+    VB4[1] #= VB3[1],
+    VB4[2] #= (#~VB3[2]),
+    VB4[3] #= (#~VB3[3]),
+    B4 #= sum([2**(K-1)*VB4[K] : K in 1..56]),
+%   5,5,  out B mod 8
+    Z #= B4 mod 8,
+    gen(A2,Zs).
+    
