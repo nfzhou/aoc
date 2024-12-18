@@ -1,0 +1,25 @@
+% https://adventofcode.com/2024/day/18, part-1
+
+import util.
+
+main([File]) =>
+    L = take([(to_int(T1), to_int(T2)) : Line in read_file_lines(File), [T1,T2] = split(Line,",")], 1024),
+    M = new_array(71,71),
+    bind_vars(M,'.'),
+    foreach ((X,Y) in L)
+        M[Y+1,X+1] := '#'
+    end,
+    shortest_path(1,1,M,Cost),
+    println(Cost).
+
+table (+,+,+,min)
+shortest_path(71,71,M,Cost) => Cost = 0.
+shortest_path(X,Y,M,Cost) => 
+    member((X1,Y1), [(X-1,Y),(X+1,Y),(X,Y-1),(X,Y+1)]),
+    X1 >= 1, X1 =< 71,
+    Y1 >= 1, Y1 =< 71,
+    M[Y1,X1] !== '#',
+    shortest_path(X1,Y1,M,Cost1),
+    Cost is Cost1+1.
+
+    

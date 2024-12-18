@@ -1,0 +1,51 @@
+% https://adventofcode.com/2024/day/18, part-2
+
+import util.
+
+main([File]) =>
+    L = [(to_int(T1), to_int(T2)) : Line in read_file_lines(File), [T1,T2] = split(Line,",")],
+    break_list(L,1024,L1,L2),
+    M = new_array(71,71),
+    bind_vars(M,'.'),
+    foreach ((X,Y) in L1)
+        M[Y+1,X+1] := '#'
+    end,
+    search(M,L2,Coord),
+    println(Coord).
+
+% binary search
+search(M,L@[Coord],Res) =>
+    search_aux(M,L,[],Res).
+search(M,L,Res) =>
+    N = len(L),
+    break_list(L,N//2,L1,L2),
+    search_aux(M,L1,L2,Res).
+
+search_aux(M,L1,L2,Res) ?=>
+    foreach ((X,Y) in L1)
+        M[Y+1,X+1] := '#'
+    end,
+    shortest_path(1,1,M,_),!,
+    search(M,L2,Res).
+search_aux(M,L1,L2,Res), L1 = [Coord] =>
+    Res = Coord.
+search_aux(M,L1,L2,Res) =>
+    search(M,L1,Res).
+    
+table (+,+,+,min)
+shortest_path(71,71,M,Cost) => Cost = 0.
+shortest_path(X,Y,M,Cost) => 
+    member((X1,Y1), [(X-1,Y),(X+1,Y),(X,Y-1),(X,Y+1)]),
+    X1 >= 1, X1 =< 71,
+    Y1 >= 1, Y1 =< 71,
+    M[Y1,X1] !== '#',
+    shortest_path(X1,Y1,M,Cost1),
+    Cost is Cost1+1.
+
+break_list([],N,L1,L2) => L1 = [], L2 = [].
+break_list(L,0,L1,L2) => L1 = [], L2 = L.
+break_list([X|L],N,L1,L2) =>
+    L1 = [X|L1R],
+    break_list(L,N-1,L1R,L2). =>
+
+    
