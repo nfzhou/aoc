@@ -1,0 +1,26 @@
+% https://adventofcode.com/2024/day/19, part-2
+
+import util.
+
+main([File]) =>
+    [Line1,_|Designs] = read_file_lines(File),
+    Patterns = [strip(Token) : Token in split(Line1,",")],
+    Count = 0,
+    foreach (Design in Designs)
+        count(Design,Patterns,ThisCount),
+        Count := Count + ThisCount
+    end,
+    println(Count).    
+
+table
+count([],_,Count) => Count = 1.
+count(D,[],Count) => Count = 0.
+count(D,Ps,Count) =>
+    count_aux(D,Ps,Ps,0,Count).
+
+count_aux(D,[],AllPs,Count0,Count) => Count = Count0.
+count_aux(D,[P|Ps],AllPs,Count0,Count), append(P,Dr,D) =>
+    count(Dr,AllPs,Count1),
+    count_aux(D,Ps,AllPs,Count0+Count1,Count).
+count_aux(D,[P|Ps],AllPs,Count0,Count) =>
+    count_aux(D,Ps,AllPs,Count0,Count).
