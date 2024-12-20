@@ -1,0 +1,64 @@
+% https://adventofcode.com/2024/day/20, part-2
+
+main([File]) =>
+    Ls = read_file_lines(File),
+    M = {to_array(L) : L in Ls, L=['#'|_]},
+    NRows = len(M),
+    NCols = len(M[1]),
+    between(2,NRows,Rs),
+    between(2,NCols,Cs),
+    M[Rs,Cs] == 'S',
+    between(2,NRows,Re),
+    between(2,NCols,Ce),
+    M[Re,Ce] == 'E',
+    !,
+    DistM = new_array(NRows,NCols),
+    num_tracks_in_path(Rs,Cs,Re,Ce,1,M,NRows,NCols,DistM),
+    Count = 0,
+    Limit = 20,
+    Saving = 100,
+    foreach (R in 1..NRows, C in 1..NCols, nonvar(DistM[R,C]))
+        Dests = [(R1,C1) : R1 in max(2,R-Limit)..min(NRows-1, R+Limit),
+                           C1 in max(2,C-Limit)..min(NCols-1, C+Limit),
+                           abs(R-R1)+abs(C-C1) =< Limit,
+                           (R1,C1) != (R,C),
+                           M[R1,C1] !== '#',
+                           shortest_path((R,C), (R1,C1), M, Limit, Len),
+                           DistM[R1,C1] - DistM[R,C] - Len =< Saving],
+        Count := Count + len(Dests),
+    end,
+    println(Count).
+
+% possible because there is only one path
+num_tracks_in_path(R,C,R,C,I,M,NRows,NCols,DistM) =>
+    DistM[R,C] = I.
+num_tracks_in_path(R,C,Re,Ce,I,M,NRows,NCols,DistM) =>
+    DistM[R,C] = I,
+    next_track(R,C,M,NRows,NCols,DistM,R1,C1),
+    num_tracks_in_path(R1,C1,Re,Ce,I+1,M,NRows,NCols,DistM).
+
+next_track(R,C,M,NRows,NCols,DistM,R1,C1) =>
+    neibs(R,C,NRows,NCols,Neibs),
+    member((R1,C1), Neibs),
+    M[R1,C1] != '#',
+    var(DistM[R1,C1]),!.
+
+neibs(R,C,NRows,NCols,Neibs) =>
+    Neibs = [Neib : Neib in [(R,C-1), (R,C+1), (R-1,C), (R+1,C)],
+                    Neib = (R1,C1),
+                    R1 >= 1, R1 =< NRows, C1 >= 1, C1 =< NCols].
+
+table (+,+,+,+,min)
+shortest_path((R,C),Goal@(Re,Ce),M,Limit,Len), Limit > 0 =>
+    NRows = len(M),
+    NCols = len(M[1]),
+    neibs(R,C,NRows,NCols,Neibs),
+    member(Neib, Neibs),
+    Neib = (R1,C1),
+    if Re==R1, Ce == C1 then
+        Len = 1
+    else    
+        M[R1,C1] == '#',
+        shortest_path(Neib,Goal,M,Limit-1,Len1),
+        Len = Len1+1
+    end.
