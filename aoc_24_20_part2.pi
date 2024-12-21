@@ -1,5 +1,4 @@
 % https://adventofcode.com/2024/day/20, part-2
-% This is incorrect. 
 
 main([File]) =>
     Ls = read_file_lines(File),
@@ -18,7 +17,7 @@ main([File]) =>
     Count = 0,
     Limit = 20,
     Saving = 100,
-    foreach (R in 1..NRows, C in 1..NCols, nonvar(DistM[R,C]))
+    foreach (R in 2..NRows-1, C in 2..NCols-1, nonvar(DistM[R,C]))
         Dests = [(R1,C1) : R1 in max(2,R-Limit)..min(NRows-1, R+Limit),
                            C1 in max(2,C-Limit)..min(NCols-1, C+Limit),
                            abs(R-R1)+abs(C-C1) =< Limit,
