@@ -1,0 +1,90 @@
+% https://adventofcode.com/2024/day/21, part-2
+
+main([File]) =>
+    Codes = read_file_lines(File),
+    Comp = 0,
+    S0 = new_list(26),
+    bind_vars(S0,'A'),
+    foreach (Code in Codes)
+        plan([Code|S0],Len),
+        Comp := Comp + to_int([D : D in Code, digit(D)]) * Len
+    end,
+    println(Comp).
+
+table (+,min)
+plan([[]|Rs],Len) =>
+    Len = 0.
+plan(State,Len) =>
+    member(Action,['A',u,d,l,r]),
+    update_state(Action,State,NextState),
+    plan(NextState,Len1),
+    Len is Len1+1.
+
+update_state(Action,[Code|Rs],NextState) =>
+    NextState = [NextCode|NextRs],
+    update_robots(Action,Rs,NextRs,Code,NextCode).
+
+update_robots('A',[R],NextRs,Code,NextCode) =>
+    NextRs = [R],
+    Code = [R|NextCode].
+update_robots('A',[R|Rs],NextRs,Code,NextCode) =>
+    NextRs = [R|NextRs1],
+    update_robots(R,Rs,NextRs1,Code,NextCode).
+update_robots(Dir,[R],NextRs,Code,NextCode) =>
+    NextCode = Code,
+    NextRs = [NextR],
+    move_num_pad(Dir,R,NextR).
+update_robots(Dir,[R|Rs],NextRs,Code,NextCode) =>
+    move_dir_pad(Dir,R,NextR),
+    NextRs = [NextR|Rs],
+    NextCode = Code.    
+
+index (+,+,-)
+move_dir_pad(l,'A',u).
+move_dir_pad(l,r,d).
+move_dir_pad(l,d,l).
+%
+move_dir_pad(r,u,'A').
+move_dir_pad(r,d,r).
+move_dir_pad(r,l,d).
+%
+move_dir_pad(u,r,'A').
+move_dir_pad(u,d,u).
+%
+move_dir_pad(d,'A',r).
+move_dir_pad(d,u,d).
+    
+index (+,+,-)
+move_num_pad(l,'9','8').
+move_num_pad(l,'6','5').
+move_num_pad(l,'3','2').
+move_num_pad(l,'A','0').
+move_num_pad(l,'8','7').
+move_num_pad(l,'5','4').
+move_num_pad(l,'2','1').
+%
+move_num_pad(r,'7','8').
+move_num_pad(r,'4','5').
+move_num_pad(r,'1','2').
+move_num_pad(r,'8','9').
+move_num_pad(r,'5','6').
+move_num_pad(r,'2','3').
+move_num_pad(r,'0','A').
+%
+move_num_pad(u,'4','7').
+move_num_pad(u,'5','8').
+move_num_pad(u,'6','9').
+move_num_pad(u,'1','4').
+move_num_pad(u,'2','5').
+move_num_pad(u,'3','6').
+move_num_pad(u,'0','2').
+move_num_pad(u,'A','3').
+%
+move_num_pad(d,'7','4').
+move_num_pad(d,'8','5').
+move_num_pad(d,'9','6').
+move_num_pad(d,'4','1').
+move_num_pad(d,'5','2').
+move_num_pad(d,'6','3').
+move_num_pad(d,'2','0').
+move_num_pad(d,'3','A').
