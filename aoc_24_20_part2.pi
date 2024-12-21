@@ -23,8 +23,8 @@ main([File]) =>
                            abs(R-R1)+abs(C-C1) =< Limit,
                            (R1,C1) != (R,C),
                            M[R1,C1] !== '#',
-                           shortest_path((R,C), (R1,C1), M, Limit, Len),
-                           DistM[R1,C1] - DistM[R,C] - Len =< Saving],
+                           UB = DistM[R1,C1] - DistM[R,C] - Saving,
+                           path_exists((R,C), (R1,C1), M, UB)],
         Count := Count + len(Dests),
     end,
     println(Count).
@@ -48,17 +48,15 @@ neibs(R,C,NRows,NCols,Neibs) =>
                     Neib = (R1,C1),
                     R1 >= 1, R1 =< NRows, C1 >= 1, C1 =< NCols].
 
-table (+,+,+,+,min)
-shortest_path((R,C),Goal@(Re,Ce),M,Limit,Len), Limit > 0 =>
+table (+,+,+,+)
+path_exists((R,C),Goal@(Re,Ce),M,UB), UB > 0 =>
     NRows = len(M),
     NCols = len(M[1]),
     neibs(R,C,NRows,NCols,Neibs),
     member(Neib, Neibs),
     Neib = (R1,C1),
     if Re==R1, Ce == C1 then
-        Len = 1
+        true
     else    
-        M[R1,C1] == '#',
-        shortest_path(Neib,Goal,M,Limit-1,Len1),
-        Len = Len1+1
+        path_exists(Neib,Goal,M,UB-1)
     end.
