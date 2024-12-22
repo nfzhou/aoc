@@ -1,0 +1,65 @@
+% https://adventofcode.com/2024/day/22, part-2
+import util.
+
+main([File]) =>
+    Inits = [to_int(Line) : Line in read_file_lines(File)],
+    Seqs = [[Init|seq(Init,2000)] : Init in Inits],
+    PSeqs = [PSeq : Seq in Seqs, PSeq = [X mod 10 : X in Seq]],
+    CSeqs = [change(Seq) : Seq in PSeqs],
+    QDict = new_map(10000),
+    Dicts = [Dict : {PSeq, CSeq} in zip(PSeqs,CSeqs), Dict = new_map(1000), PSeq = [_|PSeq1], make_dict(PSeq1,CSeq,Dict,QDict)],
+    Most = 0,
+    foreach (Key in keys(QDict))
+        Sum := 0,
+        foreach (Dict in Dicts)
+            Sum := Sum + Dict.get(Key,0)
+        end,
+        if Sum > Most then
+            Most := Sum
+        end
+    end,
+    println(Most).
+
+
+make_dict([P1|PSeq@[P2,P3,P4|_]],[C1|CSeq@[C2,C3,C4|_]],Dict,QDict) =>
+    Key = {C1,C2,C3,C4},
+    if not Dict.has_key(Key) then
+        Dict.put(Key, P4)
+    end,
+    if not QDict.has_key(Key) then
+        QDict.put(Key,0)
+    end,
+    make_dict(PSeq,CSeq,Dict,QDict).
+make_dict(PSeq,CSeq,Dict,QDict) => true.
+
+test =>
+    Seq = [123|seq(123,2000)],
+    PSeq = [X mod 10 : X in Seq],
+    println(take(PSeq,10)),
+    CSeq = change(PSeq),
+    PSeq = [_|PSeq1],
+    Dict = new_map(),
+    make_dict(PSeq1,CSeq,Dict),
+    println(Dict).
+
+seq(X,0) = [].
+seq(X,N) = [X1|Seq] =>
+    X1 = secret(X),
+    Seq = seq(X1,N-1).
+
+secret(X) = Res =>
+    X1 = prune(mix(X*64, X)),
+    X2 = prune(mix(X1 // 32, X1)),
+    Res = prune(mix(X2*2048, X2)).
+
+mix(Given,X) = (Given ^ X).
+
+prune(X) = (X mod 16777216).
+
+change([X|Xs]) = change(X,Xs).
+
+change(X,[]) = [].
+change(X,[X1|Xs]) = [X1-X|change(X1,Xs)].
+
+
+

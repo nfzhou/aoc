@@ -1,0 +1,18 @@
+% https://adventofcode.com/2024/day/22, part-1
+
+main([File]) =>
+    Inits = [to_int(Line) : Line in read_file_lines(File)],
+    Seq = [next(Init,2000) : Init in Inits],
+    println(sum(Seq)).
+
+next(X,0) = X.
+next(X,I) = next(secret(X), I-1).
+
+secret(X) = Res =>
+    X1 = prune(mix(X*64, X)),
+    X2 = prune(mix(X1 // 32, X1)),
+    Res = prune(mix(X2*2048, X2)).
+
+mix(Given,X) = (Given ^ X).
+
+prune(X) = (X mod 16777216).
