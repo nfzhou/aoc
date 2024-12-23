@@ -1,0 +1,27 @@
+% https://adventofcode.com/2024/day/23, part-2
+
+import util, sat.
+
+main([File]) =>
+    Edges = [split(Line, "-") : Line in read_file_lines(File)],
+    EdgeSet = new_set(),
+    VSet = new_set(),
+    foreach ([V1,V2] in Edges)
+        VSet.put(V1),
+        VSet.put(V2),    
+        EdgeSet.put([V1,V2]),
+        EdgeSet.put([V2,V1])
+    end,
+    Vs = to_array(keys(VSet)),   % vertices
+    N = len(Vs),
+    Bs = new_array(N),
+    Bs :: 0..1,
+    foreach (I in 1..N-1, J in I+1..N)
+        if not EdgeSet.has_key([Vs[I],Vs[J]]) then
+            #~Bs[I] #\/ #~Bs[J]
+        end
+    end,
+    Count #= sum([B : B in Bs]),
+    solve([$max(Count)],Bs),
+    Names = sort([Vs[I] : I in 1..N, Bs[I] == 1]),
+    println(join(Names, ",")).

@@ -1,0 +1,50 @@
+% https://adventofcode.com/2024/day/23, part-1
+import util.
+
+main([File]) =>
+    Edges = [split(Line, "-") : Line in read_file_lines(File)],
+    EdgeSet = new_set(),
+    VSet = new_set(),
+    ADict = new_map(),
+    foreach ([V1,V2] in Edges)
+        VSet.put(V1),
+        VSet.put(V2),    
+        EdgeSet.put([V1,V2]),
+        EdgeSet.put([V2,V1]),
+        ADict.put(V1, [V2|ADict.get(V1,[])]),
+        ADict.put(V2, [V1|ADict.get(V2,[])])
+    end,
+    Count = 0,
+    TSet = new_set(),
+    foreach (V in keys(VSet))
+        if V = [t|_] then
+            count_clique3(V, ADict.get(V,[]), EdgeSet,ADict,TSet,0,ThisCount),
+            Count := Count+ThisCount
+        end
+    end,
+    foreach (E in sort(keys(TSet)))
+        println(E)
+    end,
+    println(Count).    
+
+count_clique3(V,[],EdgeSet,ADict,TSet,Count0,Count) =>
+    Count = Count0.
+count_clique3(V,[V1|Vs],EdgeSet,ADict,TSet,Count0,Count), EdgeSet.has_key([V,V1]) =>
+    count_clique3_aux(V,V1,Vs,EdgeSet,ADict,TSet,Count0,Count1),
+    count_clique3(V,Vs,EdgeSet,ADict,TSet,Count1,Count).
+
+count_clique3_aux(V,V1,[],EdgeSet,ADict,TSet,Count0,Count) => Count = Count0.
+count_clique3_aux(V,V1,[V2|Vs],EdgeSet,ADict,TSet,Count0,Count),
+    EdgeSet.has_key([V,V2]),
+    EdgeSet.has_key([V1,V2])
+=>
+    Key = sort([V,V1,V2]),
+    if TSet.has_key(Key) then
+        Count1 = Count0
+    else
+        Count1 = Count0+1,
+        TSet.put(Key)
+    end,
+    count_clique3_aux(V,V1,Vs,EdgeSet,ADict,TSet,Count1,Count).
+count_clique3_aux(V,V1,[V2|Vs],EdgeSet,ADict,TSet,Count0,Count) =>
+    count_clique3_aux(V,V1,Vs,EdgeSet,ADict,TSet,Count0,Count).
