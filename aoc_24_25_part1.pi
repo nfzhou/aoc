@@ -1,0 +1,24 @@
+% https://adventofcode.com/2024/day/25, part-1
+
+main([File]) =>
+    Lines = read_file_lines(File),
+    proc_lines(Lines,Locks,Keys),
+    Count = 0,
+    foreach (Lock in Locks, Key in Keys)
+        if not not Lock = Key then
+            Count := Count+1
+        end
+    end,
+    println(Count).
+
+proc_lines([],Locks,Keys) => Locks = [], Keys = [].
+proc_lines([L1@['#'|_],L2,L3,L4,L5,L6,L7|Lines],Locks,Keys) =>
+    Locks = [Lock|LocksR],
+    Lock = [R : L in [L1,L2,L3,L4,L5,L6,L7], R = [cond(E=='#', l, _) : E in L]],
+    proc_lines(Lines,LocksR,Keys).
+proc_lines([L1@['.'|_],L2,L3,L4,L5,L6,L7|Lines],Locks,Keys) =>
+    Keys = [Key|KeysR],
+    Key = [R : L in [L1,L2,L3,L4,L5,L6,L7], R = [cond(E=='#', k, _) : E in L]],
+    proc_lines(Lines,Locks,KeysR).
+proc_lines([_|Lines],Locks,Keys) =>
+    proc_lines(Lines,Locks,Keys).
