@@ -1,5 +1,7 @@
 % https://adventofcode.com/2024/day/16, part-2
 % use the cost 94444 obtained from part-1 as the upper bound
+% The original version (https://github.com/nfzhou/aoc/blob/main/aoc_24_16_part2.pi)
+% takes hours while this one only takes seconds.
 
 main([File]) =>
     Ls = read_file_lines(File),
@@ -13,33 +15,47 @@ main([File]) =>
     between(2,NCols,Ce),
     M[Re,Ce] == 'E',
     !,
-    Dr = 0, Dc = 1,   % east
     Count = 2,
     foreach (R in 2..NRows-1, C in 2..NCols-1, (R,C) != (Rs,Cs), (R,C) != (Re,Ce), M[R,C] !== '#')
-        if best_path([Dr,Dc,Rs,Cs,M,R,C,Re,Ce],_) then
-            Count := Count+1
+        if minof(best_path_via(R,C,M,Rs,Cs,Re,Ce,Cost),Cost), Cost =< 94444 then
+            Count := Count+1,
         end
     end,
     println(Count).
 
-% state [Dr,Dc,R,C,M,Rv,Cv,Re,Ce]
-% find a shortest path from (R,C) to (Re,Ce) through via point (Rv,Cv).
+% the best path from (Rs,Cs) to (Re,Ce) via (R,C)
+best_path_via(R,C,M,Rs,Cs,Re,Ce,Cost) =>
+    member([Dr,Dc], [[-1,0],[1,0],[0,-1],[0,1]]),
+    best_path_to_start([Dr,Dc,R,C,M,Rs,Cs],Cost1),
+    best_path_to_end([-Dr,-Dc,R,C,M,Re,Ce],Cost2),  % change direction by 180 degree
+    Cost = Cost1+Cost2.
+    
+
 table (+,min)
-best_path([Dr,Dc,R,C,M,R,C],Cost) => Cost = 0.          % via point eliminated, goal reached
-best_path([Dr,Dc,R,C,M,R,C|T],Cost) =>                  % via point reached
-    best_path([Dr,Dc,R,C,M|T],Cost).
-best_path([Dr,Dc|T],Cost) ?=>                           % rotate
+best_path_to_start([Dr,Dc,R,C,M,R,C],Cost), Dr == 0, Dc == -1 => Cost = 0.  % direction must be west (0,-1)
+best_path_to_start([Dr,Dc|T],Cost) ?=>                         % rotate
     turn(Dr,Dc,Dr1,Dc1),
-    best_path([Dr1,Dc1|T],Cost1),
-    Cost = Cost1+1000,
-    Cost =< 94444.
-best_path([Dr,Dc,R,C,M|T],Cost) =>                     % move
+    best_path_to_start([Dr1,Dc1|T],Cost1),
+    Cost = Cost1+1000.
+best_path_to_start([Dr,Dc,R,C,M|T],Cost) =>                    % move
     R1 = R+Dr,
     C1 = C+Dc,
     M[R1,C1] != '#',
-    best_path([Dr,Dc,R1,C1,M|T],Cost1),
-    Cost = Cost1+1,
-    Cost =< 94444.    
+    best_path_to_start([Dr,Dc,R1,C1,M|T],Cost1),
+    Cost = Cost1+1.
+
+table (+,min)
+best_path_to_end([Dr,Dc,R,C,M,R,C],Cost) => Cost = 0.
+best_path_to_end([Dr,Dc|T],Cost) ?=>                           % rotate
+    turn(Dr,Dc,Dr1,Dc1),
+    best_path_to_end([Dr1,Dc1|T],Cost1),
+    Cost = Cost1+1000.
+best_path_to_end([Dr,Dc,R,C,M|T],Cost) =>                      % move
+    R1 = R+Dr,
+    C1 = C+Dc,
+    M[R1,C1] != '#',
+    best_path_to_end([Dr,Dc,R1,C1,M|T],Cost1),
+    Cost = Cost1+1.
 
 % rotate 
 index (+,+,-,-)
