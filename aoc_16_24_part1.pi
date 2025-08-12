@@ -1,0 +1,32 @@
+% https://adventofcode.com/2016/day/24, part-1
+
+import sat.
+
+main([File]) =>
+    Maze = read_file_lines(File).to_array,
+    NRows = len(Maze),
+    NCols = len(Maze[1]),
+    Reqs = {(R,C) : R in 1..NRows, C in 1..NCols, Maze[R,C] != '.', Maze[R,C] != '#'},   % numbered cells, required
+    N = len(Reqs),
+    Vs = [{I,1} : I in 1..N],
+    Vs1 = [{d,1}|Vs],    % add a dummy node
+    Es = [{I,J,_} : I in 1..N, J in 1..N, I != J, dist(Maze,NRows,NCols,Reqs[I], Reqs[J],_)],
+    between(1,N,I0),
+    Reqs[I0] = (R0,C0),
+    Maze[R0,C0] == '0',
+    Es1 = [{I,d,_} : I in 1..N] ++ [{d,I,_} : I in 1..N, I != I0] ++ [{d,I0,1}] ++ Es,
+    hcp(Vs1,Es1),
+    TotalDist #= sum([B*Dist : {I,J,B} in Es1, I != d, J != d, dist(Maze,NRows,NCols,Reqs[I], Reqs[J],Dist)]),
+    solve($[min(TotalDist)],Es1),
+    writeln(TotalDist).
+
+table (+,+,+,+,+,min)
+dist(Maze,NRows,NCols,(R,C),(R,C),Dist) => Dist = 0.
+dist(Maze,NRows,NCols,(R,C),(R,C),Dist) => Dist = 0.
+dist(Maze,NRows,NCols,(R,C),Target,Dist) =>
+    Neibs = [(R1,C1) : (R1,C1) in [(R+1,C),(R-1,C),(R,C-1),(R,C+1)], 
+                       R1 >= 1, R1 =< NRows, C1 >= 1, C1 =< NCols,
+                       Maze[R1,C1] != '#'],
+    member(NextRC,Neibs),
+    dist(Maze,NRows,NCols,NextRC,Target,Dist1),
+    Dist = Dist1+1.

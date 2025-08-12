@@ -1,0 +1,26 @@
+% https://adventofcode.com/2016/day/24, part-2
+
+import sat.
+
+main([File]) =>
+    Maze = read_file_lines(File).to_array,
+    NRows = len(Maze),
+    NCols = len(Maze[1]),
+    Reqs = {(R,C) : R in 1..NRows, C in 1..NCols, Maze[R,C] != '.', Maze[R,C] != '#'},   % numbered cells, required
+    N = len(Reqs),
+    Vs = [{I,1} : I in 1..N],
+    Es = [{I,J,_} : I in 1..N, J in 1..N, I != J, dist(Maze,NRows,NCols,Reqs[I], Reqs[J],_)],
+    hcp(Vs,Es),
+    TotalDist #= sum([B*Dist : {I,J,B} in Es, dist(Maze,NRows,NCols,Reqs[I], Reqs[J],Dist)]),
+    solve($[min(TotalDist)],Es),
+    writeln(TotalDist).
+
+table (+,+,+,+,+,min)
+dist(Maze,NRows,NCols,(R,C),(R,C),Dist) => Dist = 0.
+dist(Maze,NRows,NCols,(R,C),Target,Dist) =>
+    Neibs = [(R1,C1) : (R1,C1) in [(R+1,C),(R-1,C),(R,C-1),(R,C+1)], 
+                       R1 >= 1, R1 =< NRows, C1 >= 1, C1 =< NCols,
+                       Maze[R1,C1] != '#'],
+    member(NextRC,Neibs),
+    dist(Maze,NRows,NCols,NextRC,Target,Dist1),
+    Dist = Dist1+1.
