@@ -5,7 +5,7 @@ import sat.
 main([File]) =>
     Ws = [to_int(Token) : Token in read_file_lines(File)].sort().to_array(),
     N = len(Ws),
-    K = 3,   % number of bins, for part-2, K = 4
+    K = 3,   % number of groups, for part-2, K = 4
     opt(Ws,N,K).
 
 opt(Ws,N,K) ?=>
