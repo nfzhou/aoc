@@ -19,7 +19,7 @@ opt(Ws,N,K) ?=>
 opt(Ws,N,K) =>
     M = get_global_map(),
     gen(Ws,N,K,Vs),
-    Card = M.get(optimum_card,optimum_card),
+    Card = M.get(optimum_card),
     Card #= sum([Vs[J] #= 0 : J in 1..N]),
     LB = prod([Ws[J] : J in 1..Card]),
     UB = prod([Ws[J] : J in N-Card+1..N]),
