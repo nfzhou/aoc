@@ -1,0 +1,38 @@
+% https://adventofcode.com/2015/day/24
+
+import sat.
+
+main([File]) =>
+    Ws = [to_int(Token) : Token in read_file_lines(File)].sort().to_array(),
+    N = len(Ws),
+    K = 3,   % number of bins, for part-2, K = 4
+    opt(Ws,N,K).
+
+opt(Ws,N,K) ?=>
+    gen(Ws,N,K,Vs),
+    Card #= sum([Vs[J] #= 0 : J in 1..N]),
+    solve($[min(Card)],Vs),   % minimize the size of group 1 first
+    println(card=Card),
+    M = get_global_map(),
+    M.put(optimum_card,Card),
+    fail.
+opt(Ws,N,K) =>
+    M = get_global_map(),
+    gen(Ws,N,K,Vs),
+    Card = M.get(optimum_card,optimum_card),
+    Card #= sum([Vs[J] #= 0 : J in 1..N]),
+    LB = prod([Ws[J] : J in 1..Card]),
+    UB = prod([Ws[J] : J in N-Card+1..N]),
+    QE :: LB..UB,
+    writeln((LB,UB)),
+    QE #= prod([cond(Vs[J] #= 0, Ws[J], 1) : J in 1..N]),
+    solve($[min(QE)],Vs),     % minimize the quantum entanglement
+    println(QE).
+
+gen(Ws,N,K,Vs) =>
+    Vs = new_array(N),
+    Vs :: 0..K-1,
+    C = sum(Ws) div K,   % capacity
+    foreach (I in 0..K-1)
+        sum([(Vs[J] #= I)*Ws[J] : J in 1..N]) #= C
+    end.
