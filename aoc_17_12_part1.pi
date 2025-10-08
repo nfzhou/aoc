@@ -1,0 +1,32 @@
+% https://adventofcode.com/2017/day/12 part1
+import util.
+
+main([File]) =>
+    EMap = new_map(),
+    read_input(File,EMap),
+    Visited = new_set(),
+    traverse(0,Visited,EMap),
+    println(size(Visited)).
+
+read_input(File,EMap) =>
+    Lines = read_file_lines(File), 
+    foreach (Line in Lines)
+        append(Str1,['<','-','>'|Str2],Line),
+        V1 = to_int(Str1),
+        Neibs = [to_int(Token) : Token in split(Str2,",")],
+        EMap.put(V1,Neibs)
+    end.
+
+traverse(V,Visited,EMap),
+    Visited.has_key(V)
+=>
+    true.
+traverse(V,Visited,EMap) =>
+    Visited.put(V),
+    Neibs = EMap.get(V,[]),
+    foreach (Neib in Neibs)
+        traverse(Neib,Visited,EMap)
+    end.
+
+    
+

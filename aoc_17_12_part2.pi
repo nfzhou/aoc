@@ -1,0 +1,43 @@
+% https://adventofcode.com/2017/day/12 part2
+
+import util.
+
+main([File]) =>
+    EMap = new_map(),
+    read_input(File,K,EMap),
+    K1 = K-1,
+    VSet = new_set(0..K1),
+    Count = 0,
+    foreach (V in 0..K1, VSet.has_key(V))
+        Visited = new_set(),
+        traverse(V,Visited,EMap),
+        foreach (VisitedV in keys(Visited))
+            VSet.del(VisitedV)
+        end,
+        Count := Count+1
+    end,
+    println(Count).
+
+read_input(File,K,EMap) =>
+    Lines = read_file_lines(File), 
+    K = len(Lines),
+    foreach (Line in Lines)
+        append(Str1,['<','-','>'|Str2],Line),
+        V1 = to_int(Str1),
+        Neibs = [to_int(Token) : Token in split(Str2,",")],
+        EMap.put(V1,Neibs)
+    end.
+
+traverse(V,Visited,EMap),
+    Visited.has_key(V)
+=>
+    true.
+traverse(V,Visited,EMap) =>
+    Visited.put(V),
+    Neibs = EMap.get(V,[]),
+    foreach (Neib in Neibs)
+        traverse(Neib,Visited,EMap)
+    end.
+
+    
+

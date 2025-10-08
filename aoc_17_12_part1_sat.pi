@@ -1,0 +1,23 @@
+% https://adventofcode.com/2017/day/12 part1
+import sat, util.
+
+main([File]) =>
+    EMap = new_map(),
+    read_input(File,K,EMap),
+    K1 is K-1,
+    Vs = [{0,1}|[{V,_} : V in 1..K1]],
+    Es = [{V1,V2,_} : V1 in 0..K1, V2 in EMap.get(V1,[])],
+    scc(Vs,Es),
+    Size #= sum([B : {_,B} in Vs]),
+    solve($[max(Size)],Vs),
+    println(Size).
+
+read_input(File,K,EMap) =>
+    Lines = read_file_lines(File), 
+    K = len(Lines),
+    foreach (Line in Lines)
+        append(Str1,['<','-','>'|Str2],Line),
+        V1 = to_int(Str1),
+        Neibs = [to_int(Token) : Token in split(Str2,",")],
+        EMap.put(V1,Neibs)
+    end.
