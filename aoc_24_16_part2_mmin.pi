@@ -1,0 +1,51 @@
+% https://adventofcode.com/2024/day/16, part-2
+
+main([File]) =>
+    Ls = read_file_lines(File),
+    M = {to_array(L) : L in Ls, L=['#'|_]},
+    NRows = len(M),
+    NCols = len(M[1]),
+    between(2,NRows,Rs),
+    between(2,NCols,Cs),
+    M[Rs,Cs] == 'S',
+    between(2,NRows,Re),
+    between(2,NCols,Ce),
+    M[Re,Ce] == 'E',
+    !,
+    Dr = 0, Dc = 1,   % east
+    InitS = [Dr,Dc,Rs,Cs,Re,Ce,M],
+    Paths = find_all(Path, path(InitS,Path,Cost)),
+    LocSet = new_set(),
+    foreach (Path in Paths, $move(R,C) in Path)
+        LocSet.put((R,C))
+    end,
+    println(size(LocSet)+1).
+        
+    
+table (+,-,mmin)
+path([Dr,Dc,R,C,R,C,M],Path,Cost) => Path = [], Cost = 0.
+path([Dr,Dc,R,C,Re,Ce,M],Path,Cost) ?=>
+    turn(Dr,Dc,Dr1,Dc1),
+    NextS = [Dr1,Dc1,R,C,Re,Ce,M],
+    path(NextS,Path1,Cost1),
+    Cost = Cost1+1000,
+    Path = [turn|Path1].
+path([Dr,Dc,R,C,Re,Ce,M],Path,Cost) =>
+    R1 = R+Dr,
+    C1 = C+Dc,
+    M[R1,C1] !== '#',
+    NextS = [Dr,Dc,R1,C1,Re,Ce,M],    
+    path(NextS,Path1,Cost1),
+    Cost = Cost1+1,
+    Path = [$move(R1,C1)|Path1].
+
+% rotate 
+turn(-1,0,0,1).
+turn(-1,0,0,-1).
+turn(0,1,1,0).
+turn(0,1,-1,0).
+turn(1,0,0,1).
+turn(1,0,0,-1).
+turn(0,-1,1,0).
+turn(0,-1,-1,0).
+
