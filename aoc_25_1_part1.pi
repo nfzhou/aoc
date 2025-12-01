@@ -1,0 +1,16 @@
+% https://adventofcode.com/2025/day/1, part1
+
+main([File]) =>
+    Ds = [cond(C == 'L', -D, D) : Line in read_file_lines(File), Line = [C|Token], D = to_int(Token)],
+    N = len(Ds),
+    gen(50,Ds,Ps),
+    Count = len([1 : 0 in Ps]),
+    println(Count).
+
+gen(P,[D|Ds],Ps) =>
+    Ps = [NextP|PsR],
+    NextP = (P+D) mod 100,
+    gen(NextP,Ds,PsR).
+gen(P,[],Ps) => Ps = [].
+
+    
