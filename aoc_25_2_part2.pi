@@ -1,0 +1,41 @@
+% https://adventofcode.com/2025/day/2, part2
+
+import util.
+
+main([File]) =>
+    [Line|_] = read_file_lines(File),
+    Rs = [(LStr,UStr) : R in split(Line,","), append(LStr,['-'|UStr],R)],
+    Sum = 0,
+    CountedSet = new_set(),
+    foreach ((LStr,UStr) in Rs)
+        Nl = len(LStr),
+        Nu = len(UStr),
+        foreach (Len in 1..Nu div 2, K in Nl div Len .. Nu div Len, K >= 2)
+            Sum := Sum+sum_valid(Len,LStr,UStr,K,CountedSet)
+        end
+    end,
+    println(Sum).
+
+sum_valid(Len,LStr,UStr,K,CountedSet) = FRes =>
+    L = to_int(LStr),
+    U = to_int(UStr),
+    LStr1 = ['1'|['0' : _ in 2..Len-1]],
+    UStr1 = ['9' : _ in 1..Len],
+    Res = 0,
+    foreach (J in to_int(LStr1)..to_int(UStr1))
+        JStr = to_string(J),
+        concat(JStr,K,[],TStr),
+        T = to_int(TStr),
+        if T >= L && T =< U then
+            if not CountedSet.has_key(T) then
+                Res := T+Res,
+                CountedSet.put(T),
+            end,
+        end
+    end,
+    FRes = Res.
+
+concat(Str,0,TStr0,TStr) => TStr = TStr0.
+concat(Str,K,TStr0,TStr) => 
+    TStr1 = Str ++ TStr0,
+    concat(Str,K-1,TStr1,TStr).
