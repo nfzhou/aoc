@@ -1,0 +1,22 @@
+% https://adventofcode.com/2025/day/3, part1
+
+main([File]) =>
+    Lines = read_file_lines(File),
+    Sum = 0,
+    foreach (Line in Lines)
+        L = [ord(D) - ord('0') : D in Line],
+        Sum := Sum + joltage(L)
+    end,
+    println(Sum).
+
+joltage(L) = Res =>
+    append(L1,[Last],L),
+    mem(L1,D1,L2),
+    not (member(T1,L2), T1 > D1),  % D1 is the max in L1
+    D2 = max(L2++[Last]),
+    Res = D1*10+D2.
+
+mem([X|Xs],Y,Ys) ?=> Y = X, Ys = Xs.
+mem([X|Xs],Y,Ys) => 
+    mem(Xs,Y,Ys).
+
