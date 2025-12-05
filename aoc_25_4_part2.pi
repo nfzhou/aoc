@@ -1,0 +1,28 @@
+% https://adventofcode.com/2025/day/4, part2
+
+main([File]) =>
+    M = {to_array(L) : L in read_file_lines(File)},
+    NRows = len(M),
+    NCols = len(M[1]),
+    remove_paper_rolls(M,NRows,NCols,M1),
+    Count0 = len([M[R,C] : R in 1..NRows, C in 1..NCols, M[R,C] == '@']),
+    Count1 = len([M1[R,C] : R in 1..NRows, C in 1..NCols, M1[R,C] == '@']),
+    println(Count0-Count1).
+
+remove_paper_rolls(M,NRows,NCols,OutM) =>
+    M1 = copy_term(M),
+    foreach (R in 1..NRows, C in 1..NCols, M[R,C] == '@')
+        if len([M[R1,C1] : Dr in -1..1, Dc in -1..1, (Dr,Dc) != (0,0), 
+                           R1 = R+Dr, C1 = C+Dc, 
+                           R1 >= 1, R1 =< NRows, 
+                           C1 >= 1, C1 =< NCols, 
+                           M[R1,C1] == '@']) < 4 then
+            M1[R,C] := '.'
+        end
+    end,
+    if M == M1 then
+        OutM = M
+    else
+        remove_paper_rolls(M1,NRows,NCols,OutM)
+    end.
+    
