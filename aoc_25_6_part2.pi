@@ -1,0 +1,44 @@
+% https://adventofcode.com/2025/day/6, part2
+import util.
+
+main([File]) =>
+    Lines = read_file_lines(File),
+    append(Lines1,[LastLine],Lines),
+    RLines = [reverse(Line) : Line in Lines1],
+    Ops = [strip(Token) : Token in split(reverse(LastLine))],
+    cal(Ops,RLines,0,Total),
+    println(Total).
+
+cal([],Lines,Total0,Total) => Total = Total0.
+cal([Op|Ops],Lines,Total0,Total) =>
+    extract_nums(Lines,Lines1,Nums),
+    Total1 = Total0 + cond(Op == "+", sum(Nums), prod(Nums)),
+    cal(Ops,Lines1,Total1,Total).
+    
+extract_nums(Lines,LinesR,Nums) =>
+    extract_col(Lines,Lines1,Ds),
+    if Ds == [] then
+        Nums = [],
+        LinesR = Lines1
+    else
+        Nums = [to_int(Ds)|Nums1],
+        extract_nums(Lines1,LinesR,Nums1)
+    end.
+
+extract_col([],LinesR,Ds) =>
+    LinesR = [], Ds = [].
+extract_col([Line|Lines],LinesR,Ds) =>
+    extract_d(Line,Line1,Ds,Ds1),
+    LinesR = [Line1|LinesR1],    
+    extract_col(Lines,LinesR1,Ds1).
+
+extract_d([],LineR,Ds,DsR) =>
+    LineR = [],
+    Ds = DsR.
+extract_d([' '|Line],LineR,Ds,DsR) =>
+    Ds = DsR,
+    Line = LineR.
+extract_d([D|Line],LineR,Ds,DsR) =>
+    Ds = [D|DsR],
+    Line = LineR.
+
