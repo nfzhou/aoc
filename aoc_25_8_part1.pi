@@ -1,0 +1,28 @@
+% https://adventofcode.com/2025/day/8, part1
+import util.
+
+main([File]) =>
+    Ps = [P : Line in read_file_lines(File), P = {to_int(Token) : Token in split(Line,",")}],
+    Ds = [{D,P1,P2} : P1 in Ps, P2 in Ps, P1 @< P2, 
+                      P1 = {X1,Y1,Z1},
+                      P2 = {X2,Y2,Z2},
+                      D = (X1-X2)**2 + (Y1-Y2)**2 + (Z1-Z2)**2].sort(),
+    CMap = new_map(),
+    foreach (P in Ps)
+        CMap.put(P, new_set([P]))
+    end,
+    foreach ({D,P1,P2} in take(Ds,1000))
+        connect(P1,P2,CMap)
+    end,
+    [(Size1,_),(Size2,_),(Size3,_)|_] = [(size(C),C) : C in values(CMap)].sort_down_remove_dups(),
+    println(Size1*Size2*Size3).
+    
+connect(P1,P2,CMap) =>
+    C1 = CMap.get(P1),
+    C2 = CMap.get(P2),
+    foreach (P in keys(C2))
+        C1.put(P)
+    end,
+    foreach (P in keys(C2))
+        CMap.put(P, C1)
+    end.
