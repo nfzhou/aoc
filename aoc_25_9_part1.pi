@@ -1,0 +1,17 @@
+% https://adventofcode.com/2025/day/8, part1
+import util.
+
+main([File]) =>
+    Ps = [P : Line in read_file_lines(File), P = {to_int(Token) : Token in split(Line,",")}].sort(),
+    comp(Ps,0,Max),
+    println(Max).
+
+comp([],Max0,Max) => Max = Max0.
+comp([{X,Y}|Ps],Max0,Max) =>
+    comp(X,Y,Ps,Max0,Max1),
+    comp(Ps,Max1,Max).
+
+comp(X,Y,[],Max0,Max) => Max = Max0.
+comp(X,Y,[{X1,Y1}|Ps],Max0,Max) =>
+    A = cond(Y1 >= Y, (X1-X+1)*(Y1-Y+1), (X1-X+1)*(Y-Y1+1)),
+    comp(X,Y,Ps,max(A,Max0),Max).

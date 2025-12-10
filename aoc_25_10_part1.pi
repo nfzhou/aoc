@@ -1,0 +1,38 @@
+% https://adventofcode.com/2025/day/10, part1
+import util.
+
+main([File]) =>
+    Ms = [split(Line) : Line in read_file_lines(File)],
+    Sum = 0,
+    foreach (M in Ms)
+        conf(M,Len),
+        Sum := Sum + Len
+    end,
+    println(Sum).
+
+conf(M,Cost) =>
+    append([LStr],BStrs,[_Joltage],M),
+    append(['['|Lights],"]",LStr),   % Lights = something like ".##."
+    Buttons = [Button : Str in BStrs, append(['('|TStr],")",Str), Button = [to_int(Token) : Token in split(TStr,",")]],
+    InitS = ['.' : _ in 1..len(Lights)],
+    conf_aux(InitS,Lights,Buttons,Cost).
+
+table (+,+,+,min)
+conf_aux(S,S,Buttons,Cost) => Cost = 0.
+conf_aux(S,G,Buttons,Cost) => 
+    member(Button,Buttons),
+    press(S,Button,NextS),
+    conf_aux(NextS,G,Buttons,Cost1),
+    Cost = Cost1+1.
+
+press(S,[],NextS) => NextS = S.
+press(S,[I|Is],NextS) =>
+    toggle(S,I,S1),
+    press(S1,Is,NextS).
+
+toggle([C|S],0,S1) =>
+    S1 = [cond(C == '#', '.', '#')|S].
+toggle([C|S],I,S1) =>
+    S1 = [C|S1R],
+    toggle(S,I-1,S1R).
+

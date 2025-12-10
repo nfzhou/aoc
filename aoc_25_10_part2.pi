@@ -1,0 +1,32 @@
+% https://adventofcode.com/2025/day/10, part2
+import util.
+import sat.
+
+main([File]) =>
+    Ms = [split(Line) : Line in read_file_lines(File)],
+    Sum = 0,
+    foreach (M in Ms)
+        conf(M,Len),
+        println(Len),
+        Sum := Sum + Len
+    end,
+    println(Sum).
+
+conf(M,Cost) =>
+    append([_LStr],BStrs,[CStr],M),
+    append(['{'|CStr1],"}",CStr),   % CStr1 = something like "3,5,4,7"
+    Counters = {to_int(Token) : Token in split(CStr1,",")},
+    Buttons = [Button : Str in BStrs, append(['('|TStr],")",Str), Button = [to_int(Token) : Token in split(TStr,",")]],
+    NCounters = len(Counters),
+    Deltas = [Delta : Button in Buttons, Delta = {0 : _ in 1..NCounters}, foreach (I in Button) Delta[I+1] := 1 end],
+    NButtons = len(Buttons),
+    Ks = new_list(NButtons),   % Ks[I] is the number of times button I is pressed
+    foreach ({I, K, Delta} in zip(1..NButtons, Ks, Deltas))
+        UB = min([Counters[J] : J in 1..NCounters, Delta[J] == 1]),
+        Ks[I] :: 0..UB,
+    end,
+    foreach (I in 1..NCounters)
+        sum([K*Delta[I] : {K,Delta} in zip(Ks, Deltas)]) #= Counters[I]
+    end,
+    Cost #= sum(Ks),
+    solve($[min(Cost)], Ks).
