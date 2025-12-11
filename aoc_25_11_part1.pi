@@ -1,0 +1,19 @@
+% https://adventofcode.com/2025/day/11, part1
+import util.
+
+main([File]) =>
+    Lines = read_file_lines(File),
+    GMap = new_map(),
+    foreach (Line in Lines)
+        append(Str1,[':',' '|Str2],Line), 
+        Neibs = [to_atom(Token) : Token in split(Str2)],
+        GMap.put(to_atom(Str1),Neibs)
+    end,
+    count(you,Count,GMap),
+    println(Count).
+
+table (+,-,nt)
+count(out,Count,GMap) => Count = 1.
+count(Node,Count,GMap) => 
+    Neibs = GMap.get(Node,[]),
+    Count = sum([Count1 : NextNode in Neibs, count(NextNode,Count1,GMap)]).
