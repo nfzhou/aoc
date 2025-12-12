@@ -5,4 +5,8 @@ http://www.hakank.org/advent-of-code-2024/
 
 https://github.com/DestyNova/advent_of_code_2024/tree/main
 
+https://codeberg.org/DestyNova/advent_of_code_2025
+
 https://github.com/cgrozea/AdventOfCode2024
+
+https://github.com/cgrozea/AdventOfCode2025-Picat
