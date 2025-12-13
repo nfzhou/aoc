@@ -1,7 +1,5 @@
 % https://adventofcode.com/2025/day/12, part1
 
-%%% NOT SUCCESSFUL, TOO SLOW %%%
-
 import util, sat.
 
 main([File]) =>
@@ -21,8 +19,8 @@ proc_input([[]|Lines],Shapes,Regions) =>
 proc_input([Line|Lines],Shapes,Regions), append(_Str,[':'],Line) =>
     proc_input_shape(Lines,Lines1,ShapeRows),
     Shape = to_array(ShapeRows),
-    Variants = variants(Shape),
-    Shapes = [Variants|ShapesR],
+    RShapes = rf_shapes(Shape),
+    Shapes = [RShapes|ShapesR],
     proc_input(Lines1,ShapesR,Regions).
 proc_input([Line|Lines],Shapes,Regions), append(Str1,[':'|Str2],Line) =>
     append(WStr1,['x'|HStr2],Str1),
@@ -37,26 +35,30 @@ proc_input_shape([Line|Lines],LinesR,ShapeRows) =>
     proc_input_shape(Lines,LinesR,ShapeRowsR).
 
 % assume all Shapes are 3*3
+pack_gifts(Shapes,{W,H,Nums}), (W div 3)*(H div 3) >= sum(Nums) => true.  % trivial
 pack_gifts(Shapes,{W,H,Nums}) =>
-    Gifts = {Gift : {Num,ShapeVariants} in zip(Nums,Shapes), _ in 1..Num,
-                    Gift = {StartR,StartC,Orient,ShapeVariants},
+    sum([Num*sum(RShape) : {Num,RShapes} in zip(Nums,Shapes), RShape = RShapes[1]]) =< W*H, 
+    Gifts = {Gift : {Num,RShapes} in zip(Nums,Shapes), _ in 1..Num,
+                    Gift = {StartR,StartC,Orient,RShapes},
                     StartR :: 1..H-2, 
                     StartC :: 1..W-2,
-                    Orient :: 1..len(ShapeVariants)},
+                    Orient :: 1..len(RShapes)},
     N = len(Gifts),
     foreach (I in 1..N, J in I+1..N)
         constrain_no_overlap(Gifts[I],Gifts[J])
     end,
     solve(Gifts).
     
-constrain_no_overlap({StartR1,StartC1,Orient1,Variants1}, {StartR2,StartC2,Orient2,Variants2}) =>
-    foreach (I in 1..len(Variants1))
-        Shape1 = Variants1[I],
-        foreach (J in 1..len(Variants2))
-            Shape2 = Variants2[J],
+constrain_no_overlap({StartR1,StartC1,Orient1,RShapes1}, {StartR2,StartC2,Orient2,RShapes2}) =>
+    DiffR #= StartR2-StartR1,
+    DiffC #= StartC2-StartC1,
+    foreach (I in 1..len(RShapes1))
+        Shape1 = RShapes1[I],
+        foreach (J in 1..len(RShapes2))
+            Shape2 = RShapes2[J],
             comp_nogoods(Shape1,Shape2,NoGoods),
             foreach ({Dr,Dc} in NoGoods)
-                Orient1 #= I #/\ Orient2 #= J #=> (StartR2 #!= StartR1+Dr #\/ StartC2 #!= StartC1+Dc)
+                Orient1 #= I #/\ Orient2 #= J #=> (DiffR #!= Dr #\/ DiffC #!=  Dc)
             end
         end
     end.
@@ -75,14 +77,14 @@ overlap(Shape1,Shape2,Dr,Dc) =>
     Shape1[R,C] == 1,
     Shape2[R1,C1] == 1,!.
 
-variants(Shape) = AllVariants =>
+rf_shapes(Shape) = AllRShapes =>
     Shape1 = rotate(Shape),
     Shape2 = rotate(Shape1),
     Shape3 = rotate(Shape2),
-    Variants1 = [Shape,Shape1,Shape2,Shape3],
-    Variants2 = [flip_h(Variant) : Variant in  Variants1],
-    Variants3 = [flip_v(Variant) : Variant in  Variants1],
-    AllVariants = sort_remove_dups(Variants1 ++ Variants2 ++ Variants3).to_array().
+    RShapes1 = [Shape,Shape1,Shape2,Shape3],
+    RShapes2 = [flip_h(RShape) : RShape in  RShapes1],
+    RShapes3 = [flip_v(RShape) : RShape in  RShapes1],
+    AllRShapes = sort_remove_dups(RShapes1 ++ RShapes2 ++ RShapes3).to_array().
 
 rotate(Shape) = transpose(Shape).
 
