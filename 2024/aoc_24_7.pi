@@ -1,0 +1,26 @@
+% https://adventofcode.com/2024/day/7
+import util.
+
+main([File]) =>
+    Ls = read_file_lines(File),
+    Sum = 0,
+    foreach (L in Ls)
+        Sum := Sum + test(L)
+    end,
+    println(Sum).
+
+test(L) = Res =>
+    append(L1,[':'|L2],L),
+    Val = to_int(L1),
+    Os = map(to_int, split(L2)),
+    Res = cond(build_eq(Os,Val), Val, 0).
+    
+build_eq([O1,O2],Val) =>
+    op(O1,O2,Val).
+build_eq([O1,O2|Os],Val) =>
+    op(O1,O2,T),
+    build_eq([T|Os],Val).
+
+op(O1,O2,Res) ?=> Res = O1+O2.
+op(O1,O2,Res) ?=> Res = O1*O2.
+op(O1,O2,Res) => Res = to_int(to_string(O1) ++ to_string(O2)).

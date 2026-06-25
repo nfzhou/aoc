@@ -1,0 +1,36 @@
+% https://adventofcode.com/2024/day/11, part-2
+% The code for part-1 is too slow on 75 blinks due to creation of intermediate lists and recomputations
+
+import util.
+
+main([File]) =>
+    [Line] = read_file_lines(File),
+    L = [to_int(Token) : Token in split(Line)],
+    Memo = new_map(),
+    change(L,75,Memo,Len),
+    println(Len).
+
+change([],N,Memo,Len) => Len = 0.
+change([E|L],N,Memo,Len) =>
+    change(E,N,Memo,Len1),
+    change(L,N,Memo,Len2),
+    Len = Len1+Len2.
+change(E,0,Memo,Len) => Len = 1.
+change(E,N,Memo,Len), Memo.has_key((E,N)) =>
+    Len = Memo.get((E,N)).
+change(0,N,Memo,Len) =>
+    change(1,N-1,Memo,Len),
+    Memo.put((0,N),Len).
+change(E,N,Memo,Len) => 
+    S = to_string(E),
+    Size = len(S),
+    if  Size mod 2 == 0  then
+        S1 = new_list(Size div 2),
+        append(S1,S2,S),
+        change(to_int(S1),N-1,Memo,Len1),
+        change(to_int(S2),N-1,Memo,Len2),
+        Len = Len1+Len2    
+    else
+        change(E*2024,N-1,Memo,Len)
+    end,
+    Memo.put((E,N),Len).

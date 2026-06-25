@@ -1,0 +1,9 @@
+% https://adventofcode.com/2024/day/1, part1
+import util.
+
+main([File]) =>
+    Ps = [{to_int(T1), to_int(T2)} : Line in read_file_lines(File), [T1,T2] = split(Line)],
+    L1 = sort([N1 : {N1,_} in Ps]),
+    L2 = sort([N2 : {_,N2} in Ps]),
+    Ds = [abs(N1-N2) : {N1,N2} in zip(L1,L2)],
+    println(sum(Ds)).

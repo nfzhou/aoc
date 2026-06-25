@@ -1,0 +1,126 @@
+% https://adventofcode.com/2024/day/24, part-2
+%
+% This is a re-writing of Cristian Grozea's brilliant CSP model for the problem:
+% https://github.com/cgrozea/AdventOfCode2024/blob/main/24/part2.pi
+% For each wire, this model uses 8 binary variables to infer its swapping partner.
+%
+import util, sat.
+
+main([File]) =>
+    Lines = read_file_lines(File),
+    WDict = new_map(),    
+    extract_gates(Lines,1,WDict,Gates),
+    N = size(WDict),                % total number of wires
+    %
+    AllWs = sort(keys(WDict)),
+    XWs = [(WNum,to_int(PStr)) : W in AllWs, W = ['x'|PStr], WNum = WDict.get(W)],
+    YWs = [(WNum,to_int(PStr)) : W in AllWs, W = ['y'|PStr], WNum = WDict.get(W)],
+    ZWs = [(WNum,to_int(PStr)) : W in AllWs, W = ['z'|PStr], WNum = WDict.get(W)],        
+    %
+    InSwapVect = new_array(N),      % InSwapVect[I] = 1 iff wire I is involved in swapping
+    InSwapVect :: 0..1,
+    SwapVect = new_array(N,4,2),    % SwapVect[I,J,K] = 1 iff wire I is involved in the Jth swapping pair 
+    SwapVect :: 0..1,               % as Kth (K = 1 or 2) partner
+    foreach ((I,_) in XWs ++ YWs)   % input wires are not involved in swapping
+        InSwapVect[I] = 0,
+        foreach (J in 1..4, K in 1..2) SwapVect[I,J,K] = 0 end
+    end,
+    foreach (I in 1..N)
+        sum([SwapVect[I,J,K] : J in 1..4, K in 1..2]) #=< 1, % no wire can be involved in more than 1 swapping
+        InSwapVect[I] #<=> sum([SwapVect[I,J,K] : J in 1..4, K in 1..2]) #> 0  
+    end,    
+    sum([InSwapVect[I] : I in 1..N]) #= 8,                   % exactly 8 wires are involved in swapping
+    foreach (J in 1..4)                                      % exactly one wire occurs in each swapping pair
+        sum([SwapVect[I,J,1] : I in 1..N]) #= 1,             
+        sum([SwapVect[I,J,2] : I in 1..N]) #= 1
+    end,    
+    %
+    foreach (_ in 1..40)   % run the circuit 40 times using random inputs
+        X = sum([B*P : I in 1..len(XWs), B = random(0,1), P = 2**(I-1)]),
+        Y = sum([B*P : I in 1..len(YWs), B = random(0,1), P = 2**(I-1)]),
+        run_circuit(X,Y,XWs,YWs,ZWs,N,Gates,InSwapVect,SwapVect)
+    end,
+    %
+    println(solving),
+    solve(InSwapVect),
+    NameNumPairs = to_list(WDict),
+    SWs = [W : I in 1..N, InSwapVect[I] == 1, member((W=I), NameNumPairs)],
+    println(join(sort(SWs), ",")),
+    fail.   % increase the number of instances, if there is more than one solution
+
+% map wire names to unique numbers
+extract_gates([],WNum,WDict,Gates) => Gates = [].
+extract_gates([Line|Lines],WNum,WDict,Gates),
+    append(IStr,['-','>'|OStr],Line)
+=>
+    Gates = [Gate|GatesR],
+    extract_gate(IStr,OStr,WNum,WNum1,WDict,Gate),
+    extract_gates(Lines,WNum1,WDict,GatesR).
+extract_gates([Line|Lines],WNum,WDict,Gates) =>
+    extract_gates(Lines,WNum,WDict,Gates).    
+
+extract_gate(IStr,OStr,WNum0,WNum,WDict,Gate),
+    append(Token1, ['X','O','R'|Token2],IStr)
+=>
+    Input1 = strip(Token1), register_wire(Input1,WNum0,WNum1,WDict,I1),
+    Input2 = strip(Token2), register_wire(Input2,WNum1,WNum2,WDict,I2),
+    Output = strip(OStr),  register_wire(Output,WNum2,WNum,WDict,O),
+    Gate = {xor,I1,I2,O}.
+extract_gate(IStr,OStr,WNum0,WNum,WDict,Gate),
+    append(Token1, ['O','R'|Token2],IStr)
+=>
+    Input1 = strip(Token1), register_wire(Input1,WNum0,WNum1,WDict,I1),
+    Input2 = strip(Token2), register_wire(Input2,WNum1,WNum2,WDict,I2),
+    Output = strip(OStr),  register_wire(Output,WNum2,WNum,WDict,O),
+    Gate = {or,I1,I2,O}.
+extract_gate(IStr,OStr,WNum0,WNum,WDict,Gate),
+    append(Token1, ['A','N','D'|Token2],IStr)
+=>    
+    Input1 = strip(Token1), register_wire(Input1,WNum0,WNum1,WDict,I1),
+    Input2 = strip(Token2), register_wire(Input2,WNum1,WNum2,WDict,I2),
+    Output = strip(OStr),  register_wire(Output,WNum2,WNum,WDict,O),
+    Gate = {and,I1,I2,O}.
+
+run_circuit(X,Y,XWs,YWs,ZWs,N,Gates,InSwapVect,SwapVect) =>
+    V = new_array(N),    % wire values for this instance X+Y = Z
+    V :: 0..1,
+    SV = new_array(N),   % wire values for this instance after swapping
+    SV :: 0..1,
+    SwapValVect = new_array(4,2),  % values of the swapped wires before and after swapping
+    SwapValVect :: 0..1,
+
+    foreach (I in 1..N)
+        #~InSwapVect[I] #=> (SV[I] #= V[I]), 
+        foreach (J in 1..4)          % if wire I occurs in pair J, wire I's value is swapped with its partner's
+            SwapVect[I,J,1] #=> (V[I] #= SwapValVect[J,1]),  
+            SwapVect[I,J,1] #=> (SV[I] #= SwapValVect[J,2]),
+            SwapVect[I,J,2] #=> (V[I] #= SwapValVect[J,2]),
+            SwapVect[I,J,2] #=> (SV[I] #= SwapValVect[J,1])
+        end            
+    end,
+
+    X #= sum([B*2**P : (W,P) in XWs, B = V[W]]),
+    Y #= sum([B*2**P : (W,P) in YWs, B = V[W]]),
+    Z #= sum([B*2**P : (W,P) in ZWs, B = SV[W]]),
+    X+Y #= Z,
+
+    foreach (Gate in Gates)
+        constrain_gate(Gate,V,SV)
+    end.
+
+constrain_gate({xor,I1,I2,O},V,SV) =>
+    V[O] #= (SV[I1] #^ SV[I2]).
+constrain_gate({or,I1,I2,O},V,SV) =>
+    V[O] #= (SV[I1] #\/ SV[I2]).
+constrain_gate({and,I1,I2,O},V,SV) =>
+    V[O] #= (SV[I1] #/\ SV[I2]).
+
+register_wire(W,WNum0,WNum,WDict,ThisNum) =>
+    if WDict.has_key(W) then
+        WNum = WNum0,
+        ThisNum = WDict.get(W)
+    else
+        ThisNum = WNum0,
+        WNum = WNum0+1,
+        WDict.put(W,WNum0)
+    end.

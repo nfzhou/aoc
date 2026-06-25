@@ -1,0 +1,130 @@
+% https://adventofcode.com/2024/day/21, part-2
+
+main([File]) =>
+    Codes = read_file_lines(File),
+    Comp = 0,
+    foreach (Code in Codes)
+        minof(final_plan_len(Code, Len),Len),
+        println((Code,Len)),
+        Comp := Comp + to_int([D : D in Code, digit(D)]) * Len
+    end,
+    println(Comp).
+
+final_plan_len(Code, FinalLen) =>
+    num_pad_plan(t,'A',Code,Plan,_),
+    N = 25,
+    trans_plan_itr(N,Plan,FinalLen).
+
+% find the shortest plan for the num pad with the smallest number of turns
+table (+,+,+,-,min)
+num_pad_plan(PreDir,_,[],Plan,Obj) => 
+    Plan = [],
+    Obj = (0, 0).
+num_pad_plan(PreDir,C,[C|Code],Plan,Obj) =>
+    Plan = ['A'|Plan1],
+    num_pad_plan(t,C,Code,Plan1,Obj1),
+    Obj1 = (Len1, Turn1),
+    Obj = (Len1+1,Turn1).
+num_pad_plan(PreDir,C,Code,Plan,Obj) =>
+    member(Dir,[l,u,d,r]),   % best ordering, found it on reddit
+    move_num_pad(Dir,C,NextC),
+    Plan = [Dir|Plan1],
+    num_pad_plan(Dir,NextC,Code,Plan1,Obj1),
+    Obj1 = (Len1, Turn1),
+    Obj = (Len1+1,cond(Dir==PreDir,Turn1,Turn1+1)).
+
+% find the shortest plan for the dir pad with the smallest number of turns.
+% could be merged with num_pad_plan
+table (+,+,+,-,min)
+dir_pad_plan(PreDir,_,[],Plan,Obj) => 
+    Plan = [],
+    Obj = (0, 0).
+dir_pad_plan(PreDir,C,[C|Code],Plan,Obj) =>
+    Plan = ['A'|Plan1],
+    dir_pad_plan(t,C,Code,Plan1,Obj1),
+    Obj1 = (Len1, Turn1),
+    Obj = (Len1+1,Turn1).
+dir_pad_plan(PreDir,C,Code,Plan,Obj) =>
+    member(Dir,[l,u,d,r]),   % best ordering
+    move_dir_pad(Dir,C,NextC),
+    Plan = [Dir|Plan1],
+    dir_pad_plan(Dir,NextC,Code,Plan1,Obj1),
+    Obj1 = (Len1, Turn1),
+    Obj = (Len1+1,cond(Dir==PreDir,Turn1,Turn1+1)).
+
+table
+trans_plan_itr(0,Plan,Len) =>
+    Len = len(Plan).    
+trans_plan_itr(N,[],Len) => Len = 0.
+trans_plan_itr(N,Plan,Len) =>
+    extract_chunk(t,Plan,PlanR,Chunk),
+    dir_pad_plan(t,'A',Chunk,ChunkPlan,_),
+    trans_plan_itr(N-1,ChunkPlan,Len1),
+    trans_plan_itr(N,PlanR,Len2),
+    Len is Len1+Len2.
+
+% a chunk begins with a non-A key, ends with 'A', and is not followed by another 'A'
+extract_chunk(K,[],PlanR,Chunk) =>
+    PlanR = [],
+    Chunk = [].
+extract_chunk('A',['A'|Plan],PlanR,Chunk) =>
+    Chunk = ['A'|ChunkR],
+    extract_chunk('A',Plan,PlanR,ChunkR).
+extract_chunk('A',Plan,PlanR,Chunk) =>
+    Chunk = [],
+    Plan = PlanR.
+extract_chunk(K,[C|Plan],PlanR,Chunk) =>
+    Chunk = [C|ChunkR],
+    extract_chunk(C,Plan,PlanR,ChunkR).
+
+
+index (+,+,-)
+move_dir_pad(l,'A',u).
+move_dir_pad(l,r,d).
+move_dir_pad(l,d,l).
+%
+move_dir_pad(r,u,'A').
+move_dir_pad(r,d,r).
+move_dir_pad(r,l,d).
+%
+move_dir_pad(u,r,'A').
+move_dir_pad(u,d,u).
+%
+move_dir_pad(d,'A',r).
+move_dir_pad(d,u,d).
+    
+index (+,+,-)
+move_num_pad(l,'9','8').
+move_num_pad(l,'6','5').
+move_num_pad(l,'3','2').
+move_num_pad(l,'A','0').
+move_num_pad(l,'8','7').
+move_num_pad(l,'5','4').
+move_num_pad(l,'2','1').
+%
+move_num_pad(r,'7','8').
+move_num_pad(r,'4','5').
+move_num_pad(r,'1','2').
+move_num_pad(r,'8','9').
+move_num_pad(r,'5','6').
+move_num_pad(r,'2','3').
+move_num_pad(r,'0','A').
+%
+move_num_pad(u,'4','7').
+move_num_pad(u,'5','8').
+move_num_pad(u,'6','9').
+move_num_pad(u,'1','4').
+move_num_pad(u,'2','5').
+move_num_pad(u,'3','6').
+move_num_pad(u,'0','2').
+move_num_pad(u,'A','3').
+%
+move_num_pad(d,'7','4').
+move_num_pad(d,'8','5').
+move_num_pad(d,'9','6').
+move_num_pad(d,'4','1').
+move_num_pad(d,'5','2').
+move_num_pad(d,'6','3').
+move_num_pad(d,'2','0').
+move_num_pad(d,'3','A').
+

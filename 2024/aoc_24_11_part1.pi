@@ -1,0 +1,29 @@
+% https://adventofcode.com/2024/day/11, part-1
+import util.
+
+main([File]) =>
+    [Line] = read_file_lines(File),
+    L = map(to_int, split(Line)),
+    change(L,OutL,25),
+    println(len(OutL)).
+
+change(L,OutL,0) => OutL = L.
+change(L,OutL,N) =>
+    change(L,T),
+    change(T,OutL,N-1).
+
+change([],OutL) => OutL = [].
+change([0|L],OutL) =>
+    OutL = [1|OutLR],
+    change(L,OutLR).
+change([E|L],OutL) =>
+    S = to_string(E),
+    Len = len(S),
+    if  Len mod 2 == 0  then
+        S1 = new_list(Len div 2),
+        append(S1,S2,S),
+        OutL = [to_int(S1), to_int(S2)|OutLR]
+    else
+        OutL = [E*2024|OutLR]
+    end,
+    change(L,OutLR).

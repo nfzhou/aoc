@@ -1,0 +1,33 @@
+% https://adventofcode.com/2024/day/9, part-1
+
+
+main([File]) =>
+    Str = read_file_chars(File),
+    L = [to_int(C) : C in Str, digit(C)],
+    num_blocks(L,0,NumberedL),
+    A = to_array(NumberedL),
+    move_blocks(A,1,len(A)),
+    Sum = sum([A[I+1]*I : I in 0..len(A)-1, A[I+1] > 0]),
+    println(Sum).
+
+num_blocks([],Id,NumberedL) =>
+    NumberedL = [].
+num_blocks([N],Id,NumberedL) =>
+    dup(N,Id,NumberedL,[]).
+num_blocks([N1,N2|L],Id,NumberedL) =>
+    dup(N1,Id,NumberedL,NumberedL1),
+    dup(N2,-1,NumberedL1,NumberedL2),
+    num_blocks(L,Id+1,NumberedL2).
+
+dup(0,Id,L,LR) => L = LR.
+dup(N,Id,L,LR) =>
+    L = [Id|L1],
+    dup(N-1,Id,L1,LR).
+
+move_blocks(A,I,J), I >= J => true.
+move_blocks(A,I,J), A[J] < 0 => move_blocks(A,I,J-1).
+move_blocks(A,I,J), A[I] >= 0 => move_blocks(A,I+1,J).
+move_blocks(A,I,J) => A[I] := A[J], A[J] := -1, move_blocks(A,I+1,J-1).
+
+
+

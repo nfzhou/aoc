@@ -1,0 +1,20 @@
+% https://adventofcode.com/2024/day/19, part-1
+
+import util.
+
+main([File]) =>
+    [Line1,_|Designs] = read_file_lines(File),
+    Patterns = [strip(Token) : Token in split(Line1,",")],
+    Count = 0,
+    foreach (Design in Designs)
+        Count := Count + cond(composible(Design,Patterns), 1, 0)
+    end,
+    println(Count).    
+
+table
+composible([],Patterns) => true.
+composible(Design,Patterns) =>
+    member(Pattern,Patterns),
+    append(Pattern,DesignR,Design),
+    composible(DesignR,Patterns).
+

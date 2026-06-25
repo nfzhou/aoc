@@ -1,0 +1,17 @@
+% https://adventofcode.com/2024/day/2, part1
+import util.
+
+main([File]) =>
+    Rs = [R : Line in read_file_lines(File), R = [to_int(T) : T in split(Line)]],
+    println(sum([1 : R in Rs, safe(R)])).
+
+safe([]) => true.
+safe([_]) => true.
+safe(L@[X,Y|_]), X < Y => inc(L).
+safe(L@[X,Y|_]), X > Y => dec(L).
+
+inc([_]) => true.
+inc([X|L@[Y|_]]), X < Y, Y-X =< 3 => inc(L).
+
+dec([_]) => true.
+dec([X|L@[Y|_]]), X > Y, X-Y =< 3 => dec(L).

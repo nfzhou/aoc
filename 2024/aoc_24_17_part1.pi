@@ -1,0 +1,80 @@
+% https://adventofcode.com/2024/day/17, part-1
+
+import util.
+
+main([File]) =>
+    Lines = read_file_lines(File),
+    proc_input(Lines,P,A,B,C),
+    run(to_array(P),{0,A,B,C},Out),
+    Out = [V1|Out1],
+    print(V1),
+    foreach (V in Out1)
+        print(','),
+        print(V)
+    end,
+    nl.
+
+proc_input([['R',e,g,i,s,t,e,r,' ','A',':'|L]|Ls],P,A,B,C) =>
+    A = to_int(L),
+    proc_input(Ls,P,A,B,C).
+proc_input([['R',e,g,i,s,t,e,r,' ','B',':'|L]|Ls],P,A,B,C) =>    
+    B = to_int(L),
+    proc_input(Ls,P,A,B,C).
+proc_input([['R',e,g,i,s,t,e,r,' ','C',':'|L]|Ls],P,A,B,C) =>    
+    C = to_int(L),
+    proc_input(Ls,P,A,B,C).
+proc_input([['P',r,o,g,r,a,m,':'|L]|Ls],P,A,B,C) =>
+    P = [to_int(Token) : Token in split(L,",")].
+proc_input([_|Ls],P,A,B,C) =>
+    proc_input(Ls,P,A,B,C).
+
+run(P,{PC,A,B,C},Out), PC >= len(P) => Out = [].
+run(P,S@{PC,A,B,C},Out) =>
+    exec_inst(P[PC+1],P,S,Out,Out1),
+    run(P,S,Out1).
+
+combo(X,_) = X, X =< 3 => true.
+combo(4,S) = S[2].
+combo(5,S) = S[3].
+combo(6,S) = S[4].
+
+exec_inst(0,P,S@{PC,A,B,C},Out,OutR) =>
+    X = combo(P[PC+2],S),
+    S[1] := PC+2,
+    S[2] := A div 2**X,
+    Out = OutR.
+exec_inst(1,P,S@{PC,A,B,C},Out,OutR) =>
+    X = P[PC+2],
+    S[1] := PC+2,
+    S[3] := B ^ X,
+    Out = OutR.
+exec_inst(2,P,S@{PC,A,B,C},Out,OutR) =>
+    X = combo(P[PC+2],S),
+    S[1] := PC+2,
+    S[3] := X mod 8,
+    Out = OutR.
+exec_inst(3,P,S@{PC,A,B,C},Out,OutR), A == 0 =>
+    S[1] := PC+2,
+    Out = OutR.
+exec_inst(3,P,S@{PC,A,B,C},Out,OutR) =>
+    X = P[PC+2],
+    S[1] := X,
+    Out = OutR.
+exec_inst(4,P,S@{PC,A,B,C},Out,OutR) =>
+    S[1] := PC+2,
+    S[3] := B ^ C,
+    Out = OutR.
+exec_inst(5,P,S@{PC,A,B,C},Out,OutR) =>
+    X = combo(P[PC+2],S),
+    S[1] := PC+2,
+    Out = [X mod 8|OutR].
+exec_inst(6,P,S@{PC,A,B,C},Out,OutR) =>
+    X = combo(P[PC+2],S),
+    S[1] := PC+2,
+    S[3] := A div 2**X,
+    Out = OutR.
+exec_inst(7,P,S@{PC,A,B,C},Out,OutR) =>
+    X = combo(P[PC+2],S),
+    S[1] := PC+2,
+    S[4] := A div 2**X,
+    Out = OutR.

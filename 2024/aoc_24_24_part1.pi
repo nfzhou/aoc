@@ -1,0 +1,58 @@
+% https://adventofcode.com/2024/day/24, part-1
+
+import util, sat.
+
+main([File]) =>
+    Lines = read_file_lines(File),
+    WDict = new_map(),
+    foreach (Line in Lines)
+        if append(Token1,[':'|Token2],Line) then
+            WDict.put(strip(Token1), to_int(Token2))
+        elseif append(IStr,['-','>'|OStr],Line) then
+            constrain_gate(IStr,OStr,WDict)
+        end
+    end,
+    Bs = values(WDict),
+    solve(Bs),
+    ZWs = [W : W in keys(WDict), W = ['z'|_]],
+    Res = sum([B*2**to_int(PStr) : ZW in ZWs, ZW = ['z'|PStr], B = WDict.get(ZW)]),
+    println(Res).
+
+constrain_gate(IStr,OStr,WDict),
+    append(Token1, ['X','O','R'|Token2],IStr)
+=>
+    Input1 = strip(Token1),
+    Input2 = strip(Token2),
+    Output = strip(OStr),
+    register_wire(Input1,WDict,B1),
+    register_wire(Input2,WDict,B2),
+    register_wire(Output,WDict,B),
+    B #= (B1 #^ B2).
+constrain_gate(IStr,OStr,WDict),
+    append(Token1, ['O','R'|Token2],IStr)
+=>
+    Input1 = strip(Token1),
+    Input2 = strip(Token2),
+    Output = strip(OStr),
+    register_wire(Input1,WDict,B1),
+    register_wire(Input2,WDict,B2),
+    register_wire(Output,WDict,B),
+    B #= (B1 #\/ B2).
+constrain_gate(IStr,OStr,WDict),
+    append(Token1, ['A','N','D'|Token2],IStr)
+=>
+    Input1 = strip(Token1),
+    Input2 = strip(Token2),
+    Output = strip(OStr),
+    register_wire(Input1,WDict,B1),
+    register_wire(Input2,WDict,B2),
+    register_wire(Output,WDict,B),
+    B #= (B1 #/\ B2).
+
+register_wire(W,WDict,B),
+    WDict.has_key(W)
+=>
+    B = WDict.get(W).
+register_wire(W,WDict,B) =>
+    B :: 0..1,
+    WDict.put(W,B).
