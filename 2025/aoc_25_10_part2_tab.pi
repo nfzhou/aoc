@@ -1,0 +1,42 @@
+% https://adventofcode.com/2025/day/10, part2
+import util.
+
+main([File]) =>
+    Ms = [split(Line) : Line in read_file_lines(File)],
+    Sum = 0,
+    foreach (M in Ms)
+        conf(M,Len),
+        println(Len),
+        Sum := Sum + Len
+    end,
+    println(Sum).
+
+conf(M,Cost) =>
+    append([_LStr],BStrs,[CStr],M),
+    append(['{'|CStr1],"}",CStr),   % CStr1 = something like "3,5,4,7"
+    Counters = [to_int(Token) : Token in split(CStr1,",")],
+    Buttons = [Button : Str in BStrs, append(['('|TStr],")",Str), Button = [to_int(Token) : Token in split(TStr,",")]],
+    InitS = [0 : _ in 1..len(Counters)],
+    conf_aux(InitS,Counters,Buttons,Cost).
+
+table (+,+,+,min)
+conf_aux(S,S,Buttons,Cost) => Cost = 0.
+conf_aux(S,G,Buttons,Cost) => 
+    member(Button,Buttons),
+    press(S,G,Button,NextS),
+    conf_aux(NextS,G,Buttons,Cost1),
+    Cost = Cost1+1.
+
+press(S,G,[],NextS) => NextS = S.
+press(S,G,[I|Is],NextS) =>
+    toggle(S,G,I,S1),
+    press(S1,G,Is,NextS).
+
+toggle([C|S],[Cg|G],0,S1) =>
+    C1 = C+1,
+    C1 =< Cg,
+    S1 = [C1|S].
+toggle([C|S],[_|G],I,S1) =>
+    S1 = [C|S1R],
+    toggle(S,G,I-1,S1R).
+

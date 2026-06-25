@@ -1,0 +1,41 @@
+% https://adventofcode.com/2025/day/5, part1
+
+main([File]) =>
+    Lines = read_file_lines(File),
+    split(Lines,Rs,Ids),
+    Rs1 = sort(Rs),
+    proc(Rs1,Rs2),
+    Count = 0,
+    foreach (Id in Ids)
+        if lookup(Id,Rs2) then
+            Count := Count+1
+        end
+    end,
+    println(Count).
+    
+split([],Rs,Ids) => Rs = [], Ids = [].
+split([Line|Lines],Rs,Ids),
+    append(P1,['-'|P2],Line)
+=>
+    Rs = [(to_int(P1), to_int(P2))|RsR],
+    split(Lines,RsR,Ids).
+split([Line@[_|_]|Lines],Rs,Ids) =>
+    Ids = [to_int(Line)|IdsR],
+    split(Lines,Rs,IdsR).
+split([_|Lines],Rs,Ids) =>
+    split(Lines,Rs,Ids).
+
+% ensure that no ranges overlap
+proc([(L1,U1),(L2,U2)|Rs],OutRs), U1 >= U2 =>
+    proc([(L1,U1)|Rs],OutRs).
+proc([(L1,U1),(L2,U2)|Rs],OutRs), L2 <= U1 =>
+    proc([(L1,U2)|Rs],OutRs).
+proc([R|Rs],OutRs) =>
+    OutRs = [R|OutRs1],
+    proc(Rs,OutRs1).
+proc([],OutRs) =>
+    OutRs = [].
+    
+lookup(X,[(L,U)|Rs]), X >= L, X =< U => true.
+lookup(X,[R|Rs]) => lookup(X,Rs).
+

@@ -1,0 +1,75 @@
+% https://adventofcode.com/2025/day/9, part2
+import util.
+
+main([File]) =>
+    Ps = [P : Line in read_file_lines(File), P = {to_int(Token) : Token in split(Line,",")}],
+    Hull = to_array(Ps),
+    comp(sort(Ps),Hull,0,Max),
+    println(Max).
+
+comp([],Hull,Max0,Max) => Max = Max0.
+comp([{X,Y}|Ps],Hull,Max0,Max) =>
+    comp(X,Y,Ps,Hull,Max0,Max1),
+    comp(Ps,Hull,Max1,Max).
+
+comp(X,Y,[],Hull,Max0,Max) => Max = Max0.
+comp(X,Y,[{X1,Y1}|Ps],Hull,Max0,Max) =>
+    A = cond(Y1 >= Y, (X1-X+1)*(Y1-Y+1), (X1-X+1)*(Y-Y1+1)),
+    if point_in_orthogonal_hull(Hull,{X,Y1}) && 
+       point_in_orthogonal_hull(Hull,{X1,Y}) &&
+       point_in_orthogonal_hull(Hull,{(X+X1) div 2,(Y+Y1) div 2}) then
+        Max1 = max(A,Max0)
+    else
+        Max1 = Max0
+    end,
+    comp(X,Y,Ps,Hull,Max1,Max).
+    
+/*
+    Check if a point is inside or on the edge of an orthogonal hull.    
+    Hull: list of {X, Y} vertices in counter-clockwise order
+    Point: {X, Y} tuple
+    
+    Returns: True if inside or on edge, False otherwise
+*/
+point_in_orthogonal_hull(Hull,Point), 
+    point_in_orthogonal_hull_on_edge(Hull,Point)
+=> 
+    true.
+point_in_orthogonal_hull(Hull,Point) =>    %2. Ray casting algorithm
+    {X,Y} = Point,
+    N = len(Hull),
+    Inside = 0,
+    foreach (I in 1..N)
+        I1 = cond(I == N, 1, I+1),
+        {X1,Y1} = Hull[I],
+        {X2,Y2} = Hull[I1],
+        % Check if edge crosses ray to the right of point
+        if (Y1 > Y && Y2 =< Y) || (Y1 =< Y && Y2 > Y) then
+            X_intersect = X1 + (Y - Y1) * (X2 - X1) / (Y2 - Y1),
+            if X_intersect >= X then
+                Inside := cond(Inside == 0, 1, 0)
+            end
+        end
+    end,
+    Inside == 1.
+
+
+% 1. Check if point lies on any edge
+point_in_orthogonal_hull_on_edge(Hull, Point) =>
+    {X,Y} = Point,
+    N = len(Hull),
+    OnEdge = _,
+    foreach (I in 1..N, break(nonvar(OnEdge)))
+        I1 = cond(I == N, 1, I+1),
+        {X1,Y1} = Hull[I],
+        {X2,Y2} = Hull[I1],
+        % Horizontal edge
+        if Y1 == Y && Y2 == Y && min(X1, X2) <= X && X <= max(X1, X2) then
+            OnEdge = 1
+        end,
+        % Vertical edge
+        if X1 == X && X2 == X && min(Y1, Y2) <= Y && Y <= max(Y1, Y2) then
+            OnEdge = 1
+        end
+    end,
+    OnEdge == 1.

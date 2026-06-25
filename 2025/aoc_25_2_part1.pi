@@ -1,0 +1,33 @@
+% https://adventofcode.com/2025/day/2, part1
+
+import util.
+
+main([File]) =>
+    [Line|_] = read_file_lines(File),
+    Rs = [(LStr,UStr) : R in split(Line,","), append(LStr,['-'|UStr],R)],
+    Sum = 0,
+    foreach ((LStr,UStr) in Rs)
+        Nl = len(LStr),
+        Nu = len(UStr),
+        LStr1 = cond(Nl mod 2 == 0, LStr, ['1'|['0' : _ in 1..Nl]]),
+        UStr1 = cond(Nu mod 2 == 0, UStr, ['9' : _ in 1..Nu-1]),
+        Sum := Sum+sum_valid(LStr1,UStr1)
+    end,
+    println(Sum).
+
+sum_valid(LStr,UStr) = FRes =>
+    L = to_int(LStr),
+    U = to_int(UStr),
+    LStr1 = new_list(len(LStr) div 2),
+    append(LStr1,_,LStr),
+    UStr1 = new_list(len(UStr) div 2),
+    append(UStr1,_,UStr),
+    Res = 0,
+    foreach (I in to_int(LStr1)..to_int(UStr1))
+        IStr = to_string(I),
+        T = to_int(IStr ++ IStr),
+        if T >= L && T =< U then
+            Res := T+Res
+        end
+    end,
+    FRes = Res.

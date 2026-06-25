@@ -1,0 +1,94 @@
+% https://adventofcode.com/2025/day/12, part1
+import util, sat.
+
+main([File]) =>
+    Lines = read_file_lines(File),
+    proc_input(Lines,Shapes,Regions),
+    Count = 0,
+    foreach (Region in Regions)
+        if not not pack_gifts(Shapes,Region) then    % use not not to clean up memory used in pack
+            Count := Count+1
+        end
+    end,
+    println(Count).
+
+proc_input([],Shapes,Regions) => Shapes = [], Regions = [].
+proc_input([[]|Lines],Shapes,Regions) =>
+    proc_input(Lines,Shapes,Regions).
+proc_input([Line|Lines],Shapes,Regions), append(_Str,[':'],Line) =>
+    proc_input_shape(Lines,Lines1,ShapeRows),
+    Shapes = [to_array(ShapeRows)|ShapesR],
+    proc_input(Lines1,ShapesR,Regions).
+proc_input([Line|Lines],Shapes,Regions), append(Str1,[':'|Str2],Line) =>
+    append(WStr1,['x'|HStr2],Str1),
+    Regions = [{to_int(WStr1), to_int(HStr2), [to_int(Token) : Token in split(Str2)]}|RegionsR],
+    proc_input(Lines,Shapes,RegionsR).
+
+proc_input_shape([[]|Lines],LinesR,ShapeRows) =>
+    LinesR = Lines, ShapeRows = [].
+proc_input_shape([Line|Lines],LinesR,ShapeRows) =>
+    ShapeRow = {Cell : Ch in Line, Cell = cond(Ch == '#', 1, 0)},
+    ShapeRows = [ShapeRow|ShapeRowsR],
+    proc_input_shape(Lines,LinesR,ShapeRowsR).
+
+pack_gifts(Shapes,{W,H,Nums}) =>
+    Area = new_array(H,W),
+    Area :: 0..1,
+    Gifts = [Pair : Pair in zip(Nums,Shapes), Pair = {Num,Shape}, Num != 0],
+    Packs = [Pack : {Num,Shape} in Gifts, _ in 1..Num, 
+                    Pack = new_array(H,W), 
+                    Pack :: 0..1, 
+                    pack_gift(W,H,Pack,Shape)],
+    foreach (R in 1..H, C in 1..W)
+        foreach (Pack in Packs)
+            Pack[R,C] #=> Area[R,C]
+        end,
+        sum([Pack[R,C] : Pack in Packs]) #=< 1    % no overlap
+    end,
+    sum([Area[R,C] : R in 1..H, C in 1..W]) #= sum(Packs),
+    once solve(Packs).        
+
+% Shape is assumed to be a square
+pack_gift(W,H,Pack,Shape) =>
+    sum(Pack) #= sum(Shape),
+    Shape1 = rotate(Shape),
+    Shape2 = rotate(Shape1),
+    Shape3 = rotate(Shape2),
+    Variants1 = [Shape,Shape1,Shape2,Shape3],
+    Variants2 = [flip_h(Variant) : Variant in  Variants1],
+    Variants3 = [flip_v(Variant) : Variant in  Variants1],
+    AllVariants = sort_remove_dups(Variants1 ++ Variants2 ++ Variants3),
+    Size = len(Shape),
+    UBRow = H-Size+1,
+    StartRow :: 1..UBRow,
+    UBCol = W-Size+1,
+    StartCol :: 1..UBCol,
+    foreach (R in 1..UBRow, C in 1..UBCol)
+        disjuncts(Pack,R,C,AllVariants,Size,0,Disjuncts),
+        StartRow #= R #/\ StartCol #= C #=> Disjuncts
+    end.
+
+disjuncts(Pack,R,C,[],Size,Disjuncts0,Disjuncts) => Disjuncts0 = Disjuncts.
+disjuncts(Pack,R,C,[Shape|Shapes],Size,Disjuncts0,Disjuncts) =>
+    conjunct(Pack,R,C,Shape,Size,Conjunct),
+    Disjuncts1 = $(Conjunct #\/ Disjuncts0),
+    disjuncts(Pack,R,C,Shapes,Size,Disjuncts1,Disjuncts).
+
+% Shape is placed at (R,C)
+conjunct(Pack,R,C,Shape,Size,Conjunct) =>
+    TConjunct = 1,
+    foreach (Dr in 1..Size, Dc in 1..Size)
+        TConjunct := $(Pack[R+Dr-1,C+Dc-1] #= Shape[Dr,Dc] #/\ TConjunct)
+    end,
+    Conjunct = TConjunct.
+
+rotate(Shape) = transpose(Shape).
+
+flip_h(Shape) = reverse(Shape).
+
+flip_v(Shape) = {reverse(Row) : Row in Shape}.
+    
+    
+    
+
+    

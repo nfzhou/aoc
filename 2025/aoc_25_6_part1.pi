@@ -1,0 +1,15 @@
+% https://adventofcode.com/2025/day/6, part1
+import util.
+
+main([File]) =>
+    Lines = read_file_lines(File),
+    append(Lines1,[LastLine],Lines),
+    M = [Row : Line in Lines1, Row = {to_int(Token) : Token in split(Line)}],
+    Ops = {strip(Token) : Token in split(LastLine)},
+    Total = 0,
+    foreach (J in 1..len(Ops))
+        Col = [Row[J] : Row in M],
+        Total := Total + cond(Ops[J] == ['*'], prod(Col), sum(Col))
+    end,
+    println(Total).
+

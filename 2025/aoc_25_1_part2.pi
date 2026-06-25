@@ -1,0 +1,23 @@
+% https://adventofcode.com/2025/day/1, part2
+
+main([File]) =>
+    Ds = [cond(C == 'L', -D, D) : Line in read_file_lines(File), Line = [C|Token], D = to_int(Token)],
+    simu(50,Ds,0,Count),
+    println(Count).
+
+simu(P,[],Count0,Count) => Count = Count0.
+simu(P,[D|Ds],Count0,Count), D >= 100 =>
+    simu(P,[D-100|Ds],Count0+1,Count).
+simu(P,[D|Ds],Count0,Count), D =< -100 =>    
+    simu(P,[D+100|Ds],Count0+1,Count).    
+simu(P,[D|Ds],Count0,Count) =>
+    NextP = (P+D) mod 100,
+    Count1 = Count0 + cond(cross0(P,NextP,D), 1, 0) + cond(NextP == 0, 1, 0),
+    simu(NextP,Ds,Count1,Count).
+
+cross0(0,NextP,D) => fail.
+cross0(P,0,D) => fail.
+cross0(P,NextP,D), D < 0 => NextP > P.
+cross0(P,NextP,D) => NextP < P.
+
+    

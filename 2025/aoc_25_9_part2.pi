@@ -1,0 +1,91 @@
+% https://adventofcode.com/2025/day/9, part2
+import util.
+
+main([File]) =>
+    Ps = [P : Line in read_file_lines(File), P = {to_int(Token) : Token in split(Line,",")}],
+    Ps = [FirstP|_],
+    HMap = new_map(),
+    VMap = new_map(),
+    walk(Ps++[FirstP],HMap,VMap),
+    comp(sort(Ps),HMap,VMap,0,Max),
+    println(Max).
+
+walk([{X1,Y},{X2,Y}|Ps],HMap,VMap), X1 < X2 =>  % right
+    register_min_max(HMap,Y,X1,X2),
+    foreach (I in X1..X2)
+        register_min(VMap,I,Y)
+    end,        
+    walk([{X2,Y}|Ps],HMap,VMap).
+walk([{X1,Y},{X2,Y}|Ps],HMap,VMap) =>  % left
+    register_min_max(HMap,Y,X2,X1),
+    foreach (I in X2..X1)
+        register_max(VMap,I,Y)
+    end,
+    walk([{X2,Y}|Ps],HMap,VMap).    
+walk([{X,Y1},{X,Y2}|Ps],HMap,VMap), Y1 < Y2 =>  % down
+    register_min_max(VMap,X,Y1,Y2),
+    foreach (I in Y1..Y2)
+        register_max(HMap,I,X)
+    end,
+    walk([{X,Y2}|Ps],HMap,VMap).    
+walk([{X,Y1},{X,Y2}|Ps],HMap,VMap) =>  % up
+    register_min_max(VMap,X,Y2,Y1),
+    foreach (I in Y2..Y1)
+        register_min(HMap,I,X)
+    end,
+    walk([{X,Y2}|Ps],HMap,VMap).    
+walk(_,HMap,VMap) => true.
+
+register_min_max(Map,Key,LB,UB), Map.has_key(Key) =>
+    {LB1,UB1} = Map.get(Key),
+    (var(LB1) -> LB2 = LB; LB2 = min(LB,LB1)),
+    (var(UB1) -> UB2 = UB; UB2 = max(UB,UB1)),
+    Map.put(Key,{LB2,UB2}).
+register_min_max(Map,Key,LB,UB) =>
+    Map.put(Key,{LB,UB}).
+    
+register_min(Map,Key,LB), Map.has_key(Key) =>
+    {LB1,UB1} = Map.get(Key),
+    (var(LB1) -> LB2 = LB; LB2 = min(LB,LB1)),    
+    Map.put(Key,{LB2,UB1}).    
+register_min(Map,Key,LB) =>
+    Map.put(Key,{LB,_}).        
+
+register_max(Map,Key,UB), Map.has_key(Key) =>
+    {LB1,UB1} = Map.get(Key),
+    (var(UB1) -> UB2 = UB; UB2 = max(UB,UB1)),
+    Map.put(Key,{LB1,UB2}).
+register_max(Map,Key,UB) =>
+    Map.put(Key,{_,UB}).        
+
+comp([],HMap,VMap,Max0,Max) => Max = Max0.
+comp([{X,Y}|Ps],HMap,VMap,Max0,Max) =>
+    comp(X,Y,Ps,HMap,VMap,Max0,Max1),
+    comp(Ps,HMap,VMap,Max1,Max).
+
+comp(X,Y,[],HMap,VMap,Max0,Max) => Max = Max0.
+comp(X,Y,[{X1,Y1}|Ps],HMap,VMap,Max0,Max) =>
+    A = cond(Y1 >= Y, (X1-X+1)*(Y1-Y+1), (X1-X+1)*(Y-Y1+1)),
+    if A > Max0 && point_in_region(HMap,VMap,X1,Y) && point_in_region(HMap,VMap,X,Y1) && rec_in_region(HMap,VMap,X,Y,X1,Y1) then
+        Max1 = A
+    else
+        Max1 = Max0
+    end,
+    comp(X,Y,Ps,HMap,VMap,Max1,Max).
+    
+rec_in_region(HMap,VMap,X1,Y1,X2,Y2) =>
+    foreach (X in X1+1..X2-1)
+        point_in_region(HMap,VMap,X,Y1),
+        point_in_region(HMap,VMap,X,Y2)
+    end,
+    foreach (Y in min(Y1,Y2)+1..max(Y1,Y2)-1)
+        point_in_region(HMap,VMap,X1,Y),
+        point_in_region(HMap,VMap,X2,Y)
+    end.
+
+point_in_region(HMap,VMap,X,Y) =>
+    {LBx,UBx} = HMap.get(Y),
+    LBx =< X, X =< UBx,
+    {LBy,UBy} = VMap.get(X),
+    LBy =< Y, Y =< UBy.
+    

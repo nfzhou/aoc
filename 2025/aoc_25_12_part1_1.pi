@@ -1,0 +1,91 @@
+% https://adventofcode.com/2025/day/12, part1
+
+%%% NOT SUCCESSFUL, TOO SLOW %%%
+
+import util, sat.
+
+main([File]) =>
+    Lines = read_file_lines(File),
+    proc_input(Lines,Shapes,Regions),
+    Count = 0,
+    foreach (Region in Regions)
+        if not not pack_gifts(Shapes,Region) then    % use not not to clean up memory used in pack
+            Count := Count+1
+        end
+    end,
+    println(Count).
+
+proc_input([],Shapes,Regions) => Shapes = [], Regions = [].
+proc_input([[]|Lines],Shapes,Regions) =>
+    proc_input(Lines,Shapes,Regions).
+proc_input([Line|Lines],Shapes,Regions), append(_Str,[':'],Line) =>
+    proc_input_shape(Lines,Lines1,ShapeRows),
+    Shape = to_array(ShapeRows),
+    Variants = variants(Shape),
+    Shapes = [Variants|ShapesR],
+    proc_input(Lines1,ShapesR,Regions).
+proc_input([Line|Lines],Shapes,Regions), append(Str1,[':'|Str2],Line) =>
+    append(WStr1,['x'|HStr2],Str1),
+    Regions = [{to_int(WStr1), to_int(HStr2), [to_int(Token) : Token in split(Str2)]}|RegionsR],
+    proc_input(Lines,Shapes,RegionsR).
+
+proc_input_shape([[]|Lines],LinesR,ShapeRows) =>
+    LinesR = Lines, ShapeRows = [].
+proc_input_shape([Line|Lines],LinesR,ShapeRows) =>
+    ShapeRow = {Cell : Ch in Line, Cell = cond(Ch == '#', 1, 0)},
+    ShapeRows = [ShapeRow|ShapeRowsR],
+    proc_input_shape(Lines,LinesR,ShapeRowsR).
+
+% assume all Shapes are 3*3
+pack_gifts(Shapes,{W,H,Nums}) =>
+    Gifts = {Gift : {Num,ShapeVariants} in zip(Nums,Shapes), _ in 1..Num,
+                    Gift = {StartR,StartC,Orient,ShapeVariants},
+                    StartR :: 1..H-2, 
+                    StartC :: 1..W-2,
+                    Orient :: 1..len(ShapeVariants)},
+    N = len(Gifts),
+    foreach (I in 1..N, J in I+1..N)
+        constrain_no_overlap(Gifts[I],Gifts[J])
+    end,
+    solve(Gifts).
+    
+constrain_no_overlap({StartR1,StartC1,Orient1,Variants1}, {StartR2,StartC2,Orient2,Variants2}) =>
+    foreach (I in 1..len(Variants1))
+        Shape1 = Variants1[I],
+        foreach (J in 1..len(Variants2))
+            Shape2 = Variants2[J],
+            comp_nogoods(Shape1,Shape2,NoGoods),
+            foreach ({Dr,Dc} in NoGoods)
+                Orient1 #= I #/\ Orient2 #= J #=> (StartR2 #!= StartR1+Dr #\/ StartC2 #!= StartC1+Dc)
+            end
+        end
+    end.
+
+comp_nogoods(Shape1,Shape2,NoGoods) =>
+    NoGoods = [{Dr,Dc} : Dr in -2..2, Dc in -2..2, overlap(Shape1,Shape2,Dr,Dc)].
+
+% once Shape1 is placed, compute the positions (relative to Shape1's left-up corner) for Shape2 that cause overlap
+overlap(Shape1,Shape2,Dr,Dc) =>
+    between(1, 3, R),
+    between(1, 3, C),
+    R1 = R+Dr,
+    C1 = C+Dc,
+    R1 >= 1, R1 =< 3,
+    C1 >= 1, C1 =< 3,
+    Shape1[R,C] == 1,
+    Shape2[R1,C1] == 1,!.
+
+variants(Shape) = AllVariants =>
+    Shape1 = rotate(Shape),
+    Shape2 = rotate(Shape1),
+    Shape3 = rotate(Shape2),
+    Variants1 = [Shape,Shape1,Shape2,Shape3],
+    Variants2 = [flip_h(Variant) : Variant in  Variants1],
+    Variants3 = [flip_v(Variant) : Variant in  Variants1],
+    AllVariants = sort_remove_dups(Variants1 ++ Variants2 ++ Variants3).to_array().
+
+rotate(Shape) = transpose(Shape).
+
+flip_h(Shape) = reverse(Shape).
+
+flip_v(Shape) = {reverse(Row) : Row in Shape}.
