@@ -1,0 +1,52 @@
+% https://adventofcode.com/2023/day/2
+import util.
+
+main([File]) =>
+    Ls = read_file_lines(File),
+    S = 0,
+    foreach (L in Ls)
+        S := S + power(L)
+    end,
+    println(S).
+
+power(L) = Res =>
+    append(_,[':'|L1],L),
+    BagStrs = split(L1,";"),
+    MRed0 = 0, MGreen0 = 0, MBlue0 = 0, 
+    update_mins_bags(BagStrs,MRed0,MGreen0,MBlue0,MRed,MGreen,MBlue),
+    Res = MRed*MGreen*MBlue.
+   
+update_mins_bags([],MRed0,MGreen0,MBlue0,MRed,MGreen,MBlue) =>
+    MRed = MRed0,
+    MGreen = MGreen0,
+    MBlue = MBlue0.
+update_mins_bags([BagStr|BagStrs],MRed0,MGreen0,MBlue0,MRed,MGreen,MBlue) =>
+    CStrs = split(BagStr,","),
+    update_mins_cubes(CStrs,MRed0,MGreen0,MBlue0,MRed1,MGreen1,MBlue1),
+    update_mins_bags(BagStrs,MRed1,MGreen1,MBlue1,MRed,MGreen,MBlue).
+
+update_mins_cubes([],MRed0,MGreen0,MBlue0,MRed,MGreen,MBlue) =>
+    MRed = MRed0,
+    MGreen = MGreen0,
+    MBlue = MBlue0.
+update_mins_cubes([CStr|CStrs],MRed0,MGreen0,MBlue0,MRed,MGreen,MBlue), append(Pre,"red",CStr) => 
+    MRed1 = max(MRed0, to_number(Pre)),
+    MGreen1 = MGreen0,
+    MBlue1 = MBlue0,
+    update_mins_cubes(CStrs,MRed1,MGreen1,MBlue1,MRed,MGreen,MBlue).
+update_mins_cubes([CStr|CStrs],MRed0,MGreen0,MBlue0,MRed,MGreen,MBlue), append(Pre,"green",CStr) =>     
+    MRed1 = MRed0,
+    MGreen1 = max(MGreen0,to_number(Pre)),
+    MBlue1 = MBlue0,
+    update_mins_cubes(CStrs,MRed1,MGreen1,MBlue1,MRed,MGreen,MBlue).
+update_mins_cubes([CStr|CStrs],MRed0,MGreen0,MBlue0,MRed,MGreen,MBlue), append(Pre,"blue",CStr) =>     
+    MRed1 = MRed0,
+    MGreen1 = MGreen0,
+    MBlue1 = max(MBlue0,to_number(Pre)),
+    update_mins_cubes(CStrs,MRed1,MGreen1,MBlue1,MRed,MGreen,MBlue).
+update_mins_cubes([_|CStrs],MRed0,MGreen0,MBlue0,MRed,MGreen,MBlue) =>
+    update_mins_cubes(CStrs,MRed0,MGreen0,MBlue0,MRed,MGreen,MBlue).
+
+    
+
+    

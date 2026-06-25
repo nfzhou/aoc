@@ -1,0 +1,40 @@
+% https://adventofcode.com/2023/day/3
+
+main([File]) =>
+    M = {to_array(L) : L in read_file_lines(File)},
+    NRows = len(M),
+    NCols = len(M[1]),
+    S = 0,
+    foreach (R in 1..len(M))
+        extract_numbers_in_row(M,NRows,NCols,R,1,0,ThisS),
+        S := S+ThisS
+    end,
+    println(S).
+
+extract_numbers_in_row(M,NRows,NCols,R,C,S0,S), C > NCols => S = S0.
+extract_numbers_in_row(M,NRows,NCols,R,C,S0,S), ascii_digit(M[R,C]) =>
+    ToC = C+1,
+    while (ToC =< NCols && ascii_digit(M[R,ToC]))
+        ToC := ToC+1
+    end,
+    (adjacent_to_parts(M,NRows,NCols,R,C,ToC-1) ->
+        S1 = S0+to_integer([M[R,C1] : C1 in C..ToC-1])
+    ;
+        S1 = S0
+    ),
+    extract_numbers_in_row(M,NRows,NCols,R,ToC+1,S1,S).
+extract_numbers_in_row(M,NRows,NCols,R,C,S0,S) =>
+    extract_numbers_in_row(M,NRows,NCols,R,C+1,S0,S).
+
+adjacent_to_parts(M,NRows,NCols,ThisR,FromC,ToC) =>
+    between(ThisR-1,ThisR+1,R),
+    between(FromC-1,ToC+1,C),
+    R >= 1, R =< NRows,
+    C >= 1, C =< NCols,
+    not ascii_digit(M[R,C]),
+    M[R,C] != '.',!.
+    
+
+
+        
+    

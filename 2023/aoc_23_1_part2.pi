@@ -1,0 +1,40 @@
+% https://adventofcode.com/2023/day/1
+
+main([File]) =>
+    Ls = read_file_lines(File),
+    S = 0,
+    foreach (L in Ls)
+        find_first_d(L,D1),
+        find_second_d(reverse(L),D2),
+        S := S+10*D1+D2
+    end,
+    println(S).
+
+find_first_d([C|L],D), ascii_digit(C) => D = ord(C)-ord('0').
+find_first_d([o,n,e|L],D) => D = 1.
+find_first_d([t,w,o|L],D) => D = 2.
+find_first_d([t,h,r,e,e|L],D) => D = 3.
+find_first_d([f,o,u,r|L],D) => D = 4.
+find_first_d([f,i,v,e|L],D) => D = 5.
+find_first_d([s,i,x|L],D) => D = 6.
+find_first_d([s,e,v,e,n|L],D) => D = 7.
+find_first_d([e,i,g,h,t|L],D) => D = 8.
+find_first_d([n,i,n,e|L],D) => D = 9.
+find_first_d([_|L],D) => find_first_d(L,D).
+
+find_second_d([C|L],D), ascii_digit(C) => D = ord(C)-ord('0').
+find_second_d([e,n,o|L],D) => D = 1.
+find_second_d([o,w,t|L],D) => D = 2.
+find_second_d([e,e,r,h,t|L],D) => D = 3.
+find_second_d([r,u,o,f|L],D) => D = 4.
+find_second_d([e,v,i,f|L],D) => D = 5.
+find_second_d([x,i,s|L],D) => D = 6.
+find_second_d([n,e,v,e,s|L],D) => D = 7.
+find_second_d([t,h,g,i,e|L],D) => D = 8.
+find_second_d([e,n,i,n|L],D) => D = 9.
+find_second_d([_|L],D) => find_second_d(L,D).
+
+
+
+
+    

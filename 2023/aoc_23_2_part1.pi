@@ -1,0 +1,33 @@
+import util.
+
+main([File]) =>
+    Ls = read_file_lines(File),
+    S = 0,
+    foreach (L in Ls)
+        S := S + possible(L)
+    end,
+    println(S).
+
+possible(L) = Res =>
+    append("Game ",IdStr,[':'|L1],L),
+    BagStrs = split(L1,";"),
+    (possible_game(BagStrs) -> Res = to_number(IdStr); Res = 0).
+
+possible_game(BagStrs) =>
+    foreach (BagStr in BagStrs)
+        CStrs = split(BagStr,","),
+        foreach (CStr in CStrs)
+            possible_cubes(strip(CStr))
+        end
+    end.
+
+possible_cubes(CStr), append(Pre,"red",CStr) => to_number(Pre) =< 12.
+possible_cubes(CStr), append(Pre,"green",CStr) => to_number(Pre) =< 13.
+possible_cubes(CStr), append(Pre,"blue",CStr) => to_number(Pre) =< 14.
+possible_cubes(CStr) => true.
+
+ 
+
+    
+
+    

@@ -1,0 +1,28 @@
+% https://adventofcode.com/2023/day/4 part-2
+
+import util.
+
+main([File]) =>
+    Ls = read_file_lines(File),
+    Ns = [1 : _ in 1..len(Ls)],
+    proc(Ns,Ls,0).
+
+proc(Ns,[],Total) => println(Total).
+proc([N|Ns],[L|Ls],Total) => 
+    matches(L,NMatches),
+    inc(NMatches,N,Ns,Ns1),
+    proc(Ns1,Ls,Total+N).
+
+inc(0,Inc,Ns,Ns1) => Ns1 = Ns.
+inc(C,Inc,[],Ns1) => Ns1 = [].
+inc(C,Inc,[N|Ns],Ns1) => 
+    Ns1 = [N+Inc|Ns1R],
+    inc(C-1,Inc,Ns,Ns1R).
+
+matches(L,N) =>
+    append(_,[':'|P1],['|'|P2],L),
+    Ns1 = [to_integer(T) : T in split(P1)],
+    Ns2 = [to_integer(T) : T in split(P2)],
+    N = sum([1 : E in Ns1, member(E,Ns2)]).
+
+    

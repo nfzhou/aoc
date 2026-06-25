@@ -1,0 +1,21 @@
+% https://adventofcode.com/2023/day/4
+
+import util.
+
+main([File]) =>
+    Ls = read_file_lines(File),
+    S = 0,
+    foreach (L in Ls)
+        matches(L,N),
+        S := S+cond(N==0, 0, cond(N == 1, 1, 2**(N-1)))
+    end,
+    println(S).
+
+matches(L,N) =>
+    append(_,[':'|P1],['|'|P2],L),
+    Ns1 = [to_integer(T) : T in split(P1)],
+    Ns2 = [to_integer(T) : T in split(P2)],
+    N = sum([1 : E in Ns1, member(E,Ns2)]).
+
+
+    

@@ -1,0 +1,13 @@
+% https://adventofcode.com/2023/day/1
+
+main([File]) =>
+    Ls = read_file_lines(File),
+    S = 0,
+    foreach (L in Ls)
+        once((member(A,L), ascii_digit(A))),
+        once((member(B,reverse(L)), ascii_digit(B))),
+        S := S+10*(ord(A)-ord('0'))+ord(B)-ord('0')
+    end,
+    println(S).
+
+    

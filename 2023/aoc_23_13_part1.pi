@@ -1,0 +1,45 @@
+% https://adventofcode.com/2023/day/13
+
+import util.
+
+main([File]) =>
+    Lines = read_file_lines(File),
+    extract_patterns(Lines,Ps),
+    find_mirrors(Ps,0,Sum),
+    println(Sum).
+
+extract_patterns([],Ps) => Ps = [].
+extract_patterns([[]|Lines],Ps) => 
+    extract_patterns(Lines,Ps).
+extract_patterns([Line|Lines],Ps) => 
+    Ps = [P|PsR],
+    P = [to_array(Line)|PR],
+    extract_pattern(Lines,Lines1,PR),
+    extract_patterns(Lines1,PsR).
+
+extract_pattern([],Lines1,P) => Lines1 = [], P = [].
+extract_pattern([[]|Lines],Lines1,P) => Lines1 = Lines, P = [].
+extract_pattern([Line|Lines],Lines1,P) => 
+    P = [to_array(Line)|PR],
+    extract_pattern(Lines,Lines1,PR).
+
+find_mirrors([],Sum0,Sum) => Sum = Sum0.
+find_mirrors([P|Ps],Sum0,Sum) =>
+    (mirror(transpose(P),NCols) ->
+        Sum1 is Sum0+NCols
+    ;mirror(P,NRows) ->
+        Sum1 is Sum0+100*NRows
+    ;
+        throw(no_mirror)
+    ),
+    find_mirrors(Ps,Sum1,Sum).
+
+mirror(P,I) =>
+    N = len(P),
+    between(1,N-1,I),
+    foreach (R1 in I..-1..1)
+        R2 is I+(I-R1)+1,
+        (R2 =< N -> P[R1] == P[R2]; true)
+    end,
+    !.
+
