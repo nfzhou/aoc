@@ -1,0 +1,89 @@
+% https://adventofcode.com/2023/day/5/answer
+
+import util.
+
+main([File]) =>
+    Lines = read_file_lines(File),
+    create_maps(Lines,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L),
+    find_min_loc(Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L,maxint_small(),Loc),
+    println(Loc).
+
+create_maps([],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L) => true.
+create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("seeds:",R,L) =>
+    Seeds = [to_int(Token) : Token in split(R)],
+    create_maps(Ls,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
+create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("seed-to-soil map:",_,L) =>
+    create_map0(Ls,Ls1,S2S),
+    create_maps(Ls1,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
+create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("soil-to-fertilizer map:",_,L) =>
+    create_map0(Ls,Ls1,S2F),
+    create_maps(Ls1,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
+create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("fertilizer-to-water map:",_,L) =>
+    create_map0(Ls,Ls1,F2W),
+    create_maps(Ls1,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
+create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("water-to-light map:",_,L) =>
+    create_map0(Ls,Ls1,W2L),
+    create_maps(Ls1,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
+create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("light-to-temperature map:",_,L) =>
+    create_map0(Ls,Ls1,L2T),
+    create_maps(Ls1,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
+create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("temperature-to-humidity map:",_,L) =>
+    create_map0(Ls,Ls1,T2H),
+    create_maps(Ls1,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
+create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("humidity-to-location map:",_,L) =>
+    create_map0(Ls,Ls1,H2L),
+    create_maps(Ls1,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
+create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L) =>
+    create_maps(Ls,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
+
+create_map0(Ls,Ls1,Map) =>
+    extract_triplets(Ls,Ls1,Triplets),
+    Map = to_array(sort(Triplets)).
+
+extract_triplets([L@[D|_]|Ls],Ls1,Triplets), ascii_digit(D) =>
+    [DStr,SStr,RStr] = split(L),
+    Triplets = [[to_int(SStr),to_int(DStr),to_int(RStr)]|Triplets1],
+    extract_triplets(Ls,Ls1,Triplets1).
+extract_triplets(Ls,Ls1,Triplets) =>
+    Ls1 = Ls,
+    Triplets = [].
+
+find_min_loc([],S2S,S2F,F2W,W2L,L2T,T2H,H2L,Loc0,Loc) => Loc = Loc0.
+find_min_loc([Seed|Seeds],S2S,S2F,F2W,W2L,L2T,T2H,H2L,Loc0,Loc) =>
+    do_map(Seed,S2S,S2F,F2W,W2L,L2T,T2H,H2L,Loc1),
+    find_min_loc(Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L,min(Loc0,Loc1),Loc).
+
+do_map(Seed,S2S,S2F,F2W,W2L,L2T,T2H,H2L,Loc) =>
+    do_map(Seed,S2S,Soil),
+    do_map(Soil,S2F,Fert),
+    do_map(Fert,F2W,Water),
+    do_map(Water,W2L,Light),
+    do_map(Light,L2T,Temp),
+    do_map(Temp,T2H,Hum),
+    do_map(Hum,H2L,Loc).
+
+do_map(Src,Map,Dest) =>
+    do_map(Src,Map,1,len(Map),Dest).
+
+% binary search
+do_map(Src,Map,Lo,Hi,Dest), Lo > Hi =>
+    Dest = Src.
+do_map(Src,Map,Lo,Hi,Dest) =>
+    Mid = (Lo+Hi) div 2,
+    Map[Mid] = [S,D,R],
+    (Src < S ->
+        do_map(Src,Map,Lo,Mid-1,Dest)
+    ; Src >= S+R ->
+        do_map(Src,Map,Mid+1,Hi,Dest)
+    ;
+        Dest = D+(Src-S)
+    ).
+
+    
+
+
+    
+    
+    
+
+
