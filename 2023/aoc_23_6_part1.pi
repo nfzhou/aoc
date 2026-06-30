@@ -1,0 +1,26 @@
+% https://adventofcode.com/2023/day/6
+import util.
+
+main([File]) =>
+    [TimesLine,RecordsLine|_] = read_file_lines(File),
+    append("Time:",StrTimes,TimesLine),
+    Times = [to_int(Token) : Token in split(StrTimes)],
+    append("Distance:",StrDists,RecordsLine),
+    Records = [to_int(Token) : Token in split(StrDists)],
+    Prod = 1,
+    foreach ({Time,Record} in zip(Times,Records))
+        Prod := Prod * ways(Time,Record)
+    end,
+    println(Prod).
+
+ways(Time,Record) = Res =>
+    Count = 0,
+    foreach (T in 1..Time-1)
+        if (Time-T)*T > Record then
+            Count := Count+1
+        end
+    end,
+    Res = Count.
+
+    
+

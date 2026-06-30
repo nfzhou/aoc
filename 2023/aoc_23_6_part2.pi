@@ -1,0 +1,22 @@
+% https://adventofcode.com/2023/day/6
+
+import util.
+
+main([File]) =>
+    [TimesLine,RecordsLine|_] = read_file_lines(File),
+    append("Time:",StrTimes,TimesLine),
+    Time = to_int([C : C in StrTimes, C != ' ']),
+    append("Distance:",StrDists,RecordsLine),
+    Record = to_int([C : C in StrDists, C != ' ']),
+    println(ways(Time,Record)).
+
+ways(Time,Record) = Res =>
+    between(1,Time-1,T1),
+    (Time-T1)*T1 > Record,
+    !,
+    between(Time-1,-1,1,T2),
+    (Time-T2)*T2 > Record,
+    !,
+    Res = T2-T1+1.
+    
+

@@ -1,0 +1,83 @@
+% https://adventofcode.com/2023/day/7
+
+import util.
+
+main([File]) =>
+    Lines = read_file_lines(File),
+    Hands = [{card_type(Hand),Hand,to_int(StrAmount)} : 
+                    Line in Lines, 
+                    Line = [C1,C2,C3,C4,C5|StrAmount], 
+                    Hand = [t(C1),t(C2),t(C3),t(C4),t(C5)]],
+    SHands = sort(Hands),
+    S = 0,
+    foreach ({R,Hand} in zip(1..len(Hands), SHands))
+        Hand = {_,_,Amount},
+        S := S + R*Amount
+    end,
+    println(S).
+
+
+t('A') = 'Z'.
+t('K') = 'Y'.
+t('Q') = 'X'.
+t('J') = '1'.
+t('T') = 'V'.
+t(C) = C.
+
+card_type(Hand) = Type, five(Hand) => Type = 7.
+card_type(Hand) = Type, four(Hand) => Type = 6.
+card_type(Hand) = Type, full(Hand) => Type = 5.
+card_type(Hand) = Type, three(Hand) => Type = 4.
+card_type(Hand) = Type, two_pairs(Hand) => Type = 3.
+card_type(Hand) = Type, one_pair(Hand) => Type = 2.
+card_type(Hand) = Type => Type = 1.
+
+five(Hand) =>
+    all_same(Hand).
+
+four(Hand) =>
+    select(_,Hand,Rest),
+    all_same(Rest),!.
+
+full(Hand) =>
+    select(C1,Hand,Rest1),
+    select(C2,Rest1,Rest2),
+    all_same([C1,C2]),
+    all_same(Rest2),!.
+
+three(Hand) =>
+    select(_,Hand,Rest1),
+    select(_,Rest1,Rest2),
+    all_same(Rest2),!.
+
+two_pairs(Hand) =>
+    select(C1,Hand,Rest1),
+    select(C2,Rest1,Rest2),
+    all_same([C1,C2]),    
+    select(C3,Rest2,Rest3),
+    select(C4,Rest3,_),
+    all_same([C3,C4]),!.
+
+one_pair(Hand) =>
+    select(C1,Hand,Rest1),
+    select(C2,Rest1,_),
+    all_same([C1,C2]),!.
+
+all_same(Cs) =>
+    all_same(Cs,_).
+
+all_same([],C) => true.
+all_same(['1'|Cs],C) =>
+    all_same(Cs,C).
+all_same([C1|Cs],C) =>
+    C = C1,
+    all_same(Cs,C).
+
+    
+
+
+
+
+
+
+

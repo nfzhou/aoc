@@ -13,30 +13,30 @@ create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("seeds:",R,L) =>
     Seeds = [to_int(Token) : Token in split(R)],
     create_maps(Ls,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
 create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("seed-to-soil map:",_,L) =>
-    create_map0(Ls,Ls1,S2S),
+    create_map(Ls,Ls1,S2S),
     create_maps(Ls1,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
 create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("soil-to-fertilizer map:",_,L) =>
-    create_map0(Ls,Ls1,S2F),
+    create_map(Ls,Ls1,S2F),
     create_maps(Ls1,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
 create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("fertilizer-to-water map:",_,L) =>
-    create_map0(Ls,Ls1,F2W),
+    create_map(Ls,Ls1,F2W),
     create_maps(Ls1,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
 create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("water-to-light map:",_,L) =>
-    create_map0(Ls,Ls1,W2L),
+    create_map(Ls,Ls1,W2L),
     create_maps(Ls1,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
 create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("light-to-temperature map:",_,L) =>
-    create_map0(Ls,Ls1,L2T),
+    create_map(Ls,Ls1,L2T),
     create_maps(Ls1,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
 create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("temperature-to-humidity map:",_,L) =>
-    create_map0(Ls,Ls1,T2H),
+    create_map(Ls,Ls1,T2H),
     create_maps(Ls1,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
 create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("humidity-to-location map:",_,L) =>
-    create_map0(Ls,Ls1,H2L),
+    create_map(Ls,Ls1,H2L),
     create_maps(Ls1,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
 create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L) =>
     create_maps(Ls,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
 
-create_map0(Ls,Ls1,Map) =>
+create_map(Ls,Ls1,Map) =>
     extract_triplets(Ls,Ls1,Triplets),
     Map = to_array(sort(Triplets)).
 
@@ -50,17 +50,17 @@ extract_triplets(Ls,Ls1,Triplets) =>
 
 find_min_loc([],Maps,Loc0,Loc) => Loc = Loc0.
 find_min_loc([Start,Range|Seeds],Maps,Loc0,Loc) =>
-    do_map0(Start,Start+Range-1,Maps,Loc0,Loc1),
+    do_map(Start,Start+Range-1,Maps,Loc0,Loc1),
     find_min_loc(Seeds,Maps,Loc1,Loc).
 
-do_map0(Start,End,[],Loc0,Loc) => Loc is min(Loc0, Start).
-do_map0(Start,End,[Map|Maps],Loc0,Loc) => 
-    do_map1(Start,End,1,len(Map),Map,Maps,Loc0,Loc).
+do_map(Start,End,[],Loc0,Loc) => Loc is min(Loc0, Start).
+do_map(Start,End,[Map|Maps],Loc0,Loc) => 
+    do_map_interval(Start,End,1,len(Map),Map,Maps,Loc0,Loc).
 
 % binary search
-do_map1(Start,End,Lo,Hi,Map,Maps,Loc0,Loc), Lo > Hi => 
-    do_map0(Start,End,Maps,Loc0,Loc).
-do_map1(Start,End,Lo,Hi,Map,Maps,Loc0,Loc) => 
+do_map_interval(Start,End,Lo,Hi,Map,Maps,Loc0,Loc), Lo > Hi => 
+    do_map(Start,End,Maps,Loc0,Loc).
+do_map_interval(Start,End,Lo,Hi,Map,Maps,Loc0,Loc) => 
     Mid = (Lo+Hi) div 2,
     Map[Mid] = [S,Dest,R],
     do_map_aux(Start,End,S,S+R-1,Dest,Lo,Mid,Hi,Map,Maps,Loc0,Loc).
@@ -68,30 +68,25 @@ do_map1(Start,End,Lo,Hi,Map,Maps,Loc0,Loc) =>
 do_map_aux(Start,End,S,E,Dest,Lo,Mid,Hi,Map,Maps,Loc0,Loc), 
     Start >= S, End =< E 
 =>
-    do_map0(Dest+Start-S,Dest+End-S,Maps,Loc0,Loc).
+    do_map(Dest+Start-S,Dest+End-S,Maps,Loc0,Loc).
 do_map_aux(Start,End,S,E,Dest,Lo,Mid,Hi,Map,Maps,Loc0,Loc), 
     Start == S
 =>
-    do_map1(Start,E,1,len(Map),Map,Maps,Loc0,Loc1),
-    do_map1(E+1,End,1,len(Map),Map,Maps,Loc1,Loc).
-do_map_aux(Start,End,S,E,Dest,Lo,Mid,Hi,Map,Maps,Loc0,Loc), 
-    End == E
-=>
-    do_map1(Start,S-1,1,len(Map),Map,Maps,Loc0,Loc1),
-    do_map1(S,End,1,len(Map),Map,Maps,Loc1,Loc).
+    do_map_interval(Start,E,1,len(Map),Map,Maps,Loc0,Loc1),
+    do_map_interval(E+1,End,1,len(Map),Map,Maps,Loc1,Loc).
 do_map_aux(Start,End,S,E,Dest,Lo,Mid,Hi,Map,Maps,Loc0,Loc),
     Start < S, End > S 
 =>
-    do_map1(Start,S-1,1,len(Map),Map,Maps,Loc0,Loc1),
-    do_map1(S,End,1,len(Map),Map,Maps,Loc1,Loc).
+    do_map_interval(Start,S-1,1,len(Map),Map,Maps,Loc0,Loc1),
+    do_map_interval(S,End,1,len(Map),Map,Maps,Loc1,Loc).
 do_map_aux(Start,End,S,E,Dest,Lo,Mid,Hi,Map,Maps,Loc0,Loc),
     Start > S, Start < E
 =>
-    do_map1(Start,E,1,len(Map),Map,Maps,Loc0,Loc1),
-    do_map1(E+1,End,1,len(Map),Map,Maps,Loc1,Loc).
+    do_map_interval(Start,E,1,len(Map),Map,Maps,Loc0,Loc1),
+    do_map_interval(E+1,End,1,len(Map),Map,Maps,Loc1,Loc).
 do_map_aux(Start,End,S,E,Dest,Lo,Mid,Hi,Map,Maps,Loc0,Loc),
     End < S 
 =>
-    do_map1(Start,End,Lo,Mid-1,Map,Maps,Loc0,Loc).
+    do_map_interval(Start,End,Lo,Mid-1,Map,Maps,Loc0,Loc).
 do_map_aux(Start,End,S,E,Dest,Lo,Mid,Hi,Map,Maps,Loc0,Loc) =>
-    do_map1(Start,End,Mid+1,Hi,Map,Maps,Loc0,Loc).    
+    do_map_interval(Start,End,Mid+1,Hi,Map,Maps,Loc0,Loc).    

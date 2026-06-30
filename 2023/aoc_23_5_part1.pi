@@ -13,30 +13,30 @@ create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("seeds:",R,L) =>
     Seeds = [to_int(Token) : Token in split(R)],
     create_maps(Ls,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
 create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("seed-to-soil map:",_,L) =>
-    create_map0(Ls,Ls1,S2S),
+    create_map(Ls,Ls1,S2S),
     create_maps(Ls1,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
 create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("soil-to-fertilizer map:",_,L) =>
-    create_map0(Ls,Ls1,S2F),
+    create_map(Ls,Ls1,S2F),
     create_maps(Ls1,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
 create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("fertilizer-to-water map:",_,L) =>
-    create_map0(Ls,Ls1,F2W),
+    create_map(Ls,Ls1,F2W),
     create_maps(Ls1,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
 create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("water-to-light map:",_,L) =>
-    create_map0(Ls,Ls1,W2L),
+    create_map(Ls,Ls1,W2L),
     create_maps(Ls1,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
 create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("light-to-temperature map:",_,L) =>
-    create_map0(Ls,Ls1,L2T),
+    create_map(Ls,Ls1,L2T),
     create_maps(Ls1,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
 create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("temperature-to-humidity map:",_,L) =>
-    create_map0(Ls,Ls1,T2H),
+    create_map(Ls,Ls1,T2H),
     create_maps(Ls1,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
 create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L), append("humidity-to-location map:",_,L) =>
-    create_map0(Ls,Ls1,H2L),
+    create_map(Ls,Ls1,H2L),
     create_maps(Ls1,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
 create_maps([L|Ls],Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L) =>
     create_maps(Ls,Seeds,S2S,S2F,F2W,W2L,L2T,T2H,H2L).
 
-create_map0(Ls,Ls1,Map) =>
+create_map(Ls,Ls1,Map) =>
     extract_triplets(Ls,Ls1,Triplets),
     Map = to_array(sort(Triplets)).
 
