@@ -1,0 +1,36 @@
+% https://adventofcode.com/2023/day/8, part-2
+
+import util.
+
+main([File]) =>
+    [Ds|Lines] = read_file_lines(File),
+    Network = new_map(),
+    parse_network(Lines,Network,Starts),
+    RoundCounts = [RoundCount : Start in Starts, count_rounds(Ds,Ds,Start,Network,1,RoundCount)],
+    println(lcm(RoundCounts)*len(Ds)).
+
+parse_network([],Network,Starts) => Starts = [].
+parse_network([""|Lines],Network,Starts) =>
+    parse_network(Lines,Network,Starts).
+parse_network([Line|Lines],Network,Starts) =>
+    append(FStr,[' ','=',' ','('|TStr1],[',',' '|Suf],Line),
+    append(TStr2,[')'|_],Suf),
+    Network.put(FStr, (TStr1, TStr2)),
+    (FStr = [_,_,'A'] -> Starts = [FStr|StartsR]; Starts = StartsR),
+    parse_network(Lines,Network,StartsR).
+
+count_rounds(Ds,Ds0,[_,_,'Z'],Network,Count0,Count) =>
+    Count = Count0.
+count_rounds([D|Ds],Ds0,Node,Network,Count0,Count) =>
+    (LNode,RNode) = Network.get(Node),
+    (D == 'L' -> Next = LNode; Next = RNode),
+    count_rounds(Ds,Ds0,Next,Network,Count0,Count).
+count_rounds([],Ds0,Node,Network,Count0,Count) =>
+    count_rounds(Ds0,Ds0,Node,Network,Count0+1,Count).
+
+lcm([X]) = X.
+lcm([X,Y|L]) = lcm([(X div gcd(X,Y))*Y|L]).
+
+
+    
+

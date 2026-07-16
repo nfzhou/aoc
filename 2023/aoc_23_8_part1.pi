@@ -1,0 +1,29 @@
+% https://adventofcode.com/2023/day/8
+
+import util.
+
+main([File]) =>
+    [Ds|Lines] = read_file_lines(File),
+    Network = new_map(),
+    parse_network(Lines,Network),
+    walk(Ds,Ds,0,"AAA",Network).
+
+parse_network([],Network) => true.
+parse_network([""|Lines],Network) =>
+    parse_network(Lines,Network).
+parse_network([Line|Lines],Network) =>
+    append(FStr,[' ','=',' ','('|TStr1],[',',' '|Suf],Line),
+    append(TStr2,[')'|_],Suf),
+    Network.put(FStr, (TStr1, TStr2)),
+    parse_network(Lines,Network).
+
+walk(Ds,Ds0,Count,"ZZZ",Network) => println(Count).
+walk([],Ds0,Count,Node,Network) => 
+    walk(Ds0,Ds0,Count,Node,Network).
+walk([D|Ds],Ds0,Count,Node,Network) => 
+    (LNode,RNode) = Network.get(Node),
+    (D == 'L' -> Next = LNode; Next = RNode),
+    walk(Ds,Ds0,Count+1,Next,Network).
+
+    
+

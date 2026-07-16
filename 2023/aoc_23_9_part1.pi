@@ -1,0 +1,29 @@
+% https://adventofcode.com/2023/day/9
+
+import util.
+
+main([File]) =>
+    Seqs = [reverse([to_int(Token) : Token in split(Line)]) :Line in read_file_lines(File)],
+    Sum = 0,
+    foreach (Seq in Seqs)
+        trans(Seq,Val),
+        Sum := Sum+Val
+    end,
+    println(Sum).
+
+trans(L,Val), all_zeros(L) => Val = 0.
+trans(L,Val) =>
+    trans_aux(L,L1),
+    trans(L1,Val1),
+    L = [E|_],
+    Val = Val1+E.
+
+all_zeros([0|L]) => all_zeros(L).
+all_zeros([]) => true.
+
+trans_aux([X,Y|L],L1) =>
+    L1 = [X-Y|L1R],
+    trans_aux([Y|L],L1R).
+trans_aux(_,L1) => L1 = [].
+
+

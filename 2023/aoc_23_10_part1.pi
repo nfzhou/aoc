@@ -1,0 +1,34 @@
+% https://adventofcode.com/2023/day/10
+% requires Picat version 3.9#11 or up to run
+
+import sat.
+
+main([File]) =>
+    M = to_array([to_array(Line) : Line in read_file_lines(File)]),
+    NRows = len(M),
+    NCols = len(M[1]),
+    between(1,NRows,R0),
+    between(1,NCols,C0),
+    M[R0,C0] == 'S',!,
+    M[R0,C0] := 'L',   % the pipe type may be different depending on the input
+    Vs = [{(R,C),B} : R in 1..NRows, C in 1..NCols, M[R,C] != '.', ((R,C) == (R0,C0) -> B = 1; true)],
+    Es = [{(R,C),(R1,C1),_} : R in 1..NRows, C in 1..NCols, 
+                              M[R,C] != '.', 
+                              (R1,C1) in neibs(R,C,NRows,NCols), 
+                              M[R1,C1] != '.', 
+                              connected(R,C,R1,C1,M[R,C])],
+    hcp(Vs,Es,K),
+    K #> 2,
+    println("solving..."),
+    solve($[max(K), report((Res is K /> 2, println(Res)))], (Vs,Es)),
+    writeln(K /> 2).
+
+neibs(R,C,NRows,NCols) = [(R1,C1) : (R1,C1) in [(R-1,C),(R+1,C),(R,C-1),(R,C+1)], 
+                                    R1 >= 1, R1 =< NRows, C1 >= 1, C1 =< NCols].
+
+connected(R,C,R1,C,'|') => R1 == R+1 || R1 == R-1.
+connected(R,C,R,C1,'-') => C1 == C+1 || C1 == C-1.
+connected(R,C,R1,C1,'L') => (R == R1, C1 == C+1) || (C == C1, R1 == R-1).
+connected(R,C,R1,C1,'J') => (R == R1, C1 == C-1) || (C == C1, R1 == R-1).
+connected(R,C,R1,C1,'7') => (R == R1, C1 == C-1) || (C == C1, R1 == R+1).
+connected(R,C,R1,C1,'F') => (R == R1, C1 == C+1) || (C == C1, R1 == R+1).
